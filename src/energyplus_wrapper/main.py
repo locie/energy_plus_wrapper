@@ -21,11 +21,8 @@ def log_subprocess_output(pipe):
         eplus_logger.info(line.decode().strip('\n'))
 
 
-def assert_files(idf_file,
-                 weather_file,
-                 working_dir,
-                 idd_file,
-                 out_dir):
+def _assert_files(idf_file, weather_file, working_dir,
+                  idd_file, out_dir):
     """Ensure the files and directory are here and convert them as path.Path
 
     This function will coerce the string as a path.py Path and assert if
@@ -61,8 +58,8 @@ def assert_files(idf_file,
     return idf_file, weather_file, working_dir, idd_file, out_dir
 
 
-def build_command_line(tmp, idd_file, idf_file, weather_file,
-                       prefix, ep_ver, docker=True):
+def _build_command_line(tmp, idd_file, idf_file, weather_file,
+                        prefix, ep_ver, docker=True):
     """Build the command line used in subprocess.Popen
 
     Construct the command line passed as argument to subprocess.Popen depending
@@ -98,15 +95,14 @@ def build_command_line(tmp, idd_file, idf_file, weather_file,
         return command
 
 
-def run_eplus(idf_file,
-              weather_file,
-              working_dir=".",
-              prefix="eplus",
-              idd_file=None,
-              out_dir='/tmp/',
-              keep_data=False,
-              docker=True,
-              ep_ver="8-4-0"):
+def run(idf_file, weather_file,
+        working_dir=".",
+        idd_file=None,
+        prefix="eplus",
+        out_dir='/tmp/',
+        keep_data=False,
+        docker=True,
+        ep_ver="8-4-0"):
     """
     energyplus runner using docker image (by default) or local installation.
 
@@ -153,18 +149,19 @@ def run_eplus(idf_file,
 
     logger.info('check consistency of input files')
     idf_file, weather_file, working_dir, idd_file, out_dir = \
-        assert_files(idf_file, weather_file, working_dir, idd_file, out_dir)
+        _assert_files(idf_file, weather_file, working_dir, idd_file, out_dir)
     try:
         tmp = tempdir(prefix='eplus_run_', dir=out_dir)
         logger.debug('tempory dir (%s) created' % tmp)
 
-        idd_file = idd_file.copy(tmp)
+        if idd_file is not None:
+            idd_file = idd_file.copy(tmp)
         weather_file = weather_file.copy(tmp)
         idf_file = idf_file.copy(tmp)
 
-        command = build_command_line(tmp, idd_file, idf_file,
-                                     weather_file, prefix,
-                                     ep_ver, docker)
+        command = _build_command_line(tmp, idd_file, idf_file,
+                                      weather_file, prefix,
+                                      ep_ver, docker)
         logger.debug('command line : %s' % ' '.join(command))
 
         logger.info('starting energy plus simulation...')
@@ -172,11 +169,11 @@ def run_eplus(idf_file,
             command,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT)
-
         with process.stdout:
             log_subprocess_output(process.stdout)
         process.wait()
         logger.info('energy plus simulation ended')
+
         logger.debug(
             'files generated at the end of the simulation: %s' %
             ' '.join(

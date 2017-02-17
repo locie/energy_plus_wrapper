@@ -6,13 +6,14 @@ This little library has been written in order to run energy+ simulation in linux
 The main goal is to ensure a stable behaviour across platform and version, and
 to make the link between the e+ building model tools written in python and the different analysis and optimization tools.
 
-A lot remains to do:
+TODO
+====
 
 * Write proper documentation
-* Write tests coverage
+* Write tests coverage (fies in.idf and in.epw are here for that).
 * Ensure stability and cross-platform compatibility
 * Deal with != energy-plus version
-* Write a DockerFile which can handle these != version
+* Write a DockerFile which can handle these != version (one adaptative or one per version?)
 * Write a command-line tool (using click ?) ? Maybe not that useful..
 
 Credits

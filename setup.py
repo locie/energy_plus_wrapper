@@ -7,7 +7,7 @@ README = open(os.path.join(here, 'README.rst')).read()
 
 version = '0.1'
 
-install_requires = ['path.py', 'pandas']
+install_requires = []
 
 
 setup(name='energyplus_wrapper',
