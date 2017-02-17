@@ -150,7 +150,6 @@ def run(idf_file, weather_file,
     logger.info('check consistency of input files')
     idf_file, weather_file, working_dir, idd_file, out_dir = \
         _assert_files(idf_file, weather_file, working_dir, idd_file, out_dir)
-    print(idf_file, weather_file, working_dir, idd_file, out_dir)
     try:
         tmp = tempdir(prefix='eplus_run_', dir=out_dir)
         logger.debug('tempory dir (%s) created' % tmp)
