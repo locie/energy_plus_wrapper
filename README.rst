@@ -23,6 +23,10 @@ and
 
 for the requirements.
 
+this package works well when docker is properly install and configured (https://www.docker.com/products/docker).
+
+as fallback, a proper install of energy-plus v 8.4.0 on linux system should do the trick, with docker=False on the running function.
+
 Usage
 =====
 
