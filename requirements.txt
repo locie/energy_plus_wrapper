@@ -1,5 +1,4 @@
 appdirs==1.4.0
--e git+git@github.com:celliern/energy_plus_wrapper.git@9647024ec2a27c1ac2571cca4880d24460264db2#egg=energyplus_wrapper
 numpy==1.12.0
 packaging==16.8
 pandas==0.19.2
