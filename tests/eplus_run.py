@@ -12,10 +12,10 @@ def test_docker_run(i):
 
 if __name__ == '__main__':
     logger = logging.getLogger()
-    logger.setLevel('INFO')
+    logger.setLevel('DEBUG')
     logger.addHandler(logging.StreamHandler())
     result_singleprocess = test_docker_run(0)
-    with mp.Pool() as p:
-        results_multiprocess = p.map(test_docker_run, range(30))
+    p = mp.Pool()
+    results_multiprocess = p.map(test_docker_run, range(4))
     assert all([result_singleprocess == result_multiprocess
                 for result_multiprocess in results_multiprocess])
