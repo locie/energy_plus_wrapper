@@ -12,11 +12,13 @@ Install
 For now, te package isn't available on PyPI, only on the github repo.
 
 .. code:: shell
+
     pip install git+git://github.com/celliern/energy_plus_wrapper.git
 
 and
 
 .. code:: shell
+
     pip install -r https://raw.githubusercontent.com/celliern/energy_plus_wrapper/master/requirements.txt
 
 for the requirements.
@@ -27,6 +29,7 @@ Usage
 very simple use:
 
 .. code:: python
+
     from energyplus_wrapper import run
     result = run('in.idf', 'in.epw')
 
