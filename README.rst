@@ -37,6 +37,57 @@ very simple use:
     from energyplus_wrapper import run
     result = run('in.idf', 'in.epw')
 
+
+API
+===
+
+.. code:: python
+
+    run()
+    """
+        energyplus runner using docker image (by default) or local installation.
+
+        Run an energy-plus simulation with the model file (a .idf file),
+        a weather file (should be a .epw) as required arguments. The output will be
+        a pandas dataframe or a list of dataframe or None, depending of how many
+        csv has been generated during the simulation, and requested in the model
+        file.
+        The simulation can be containerized inside a docker image (by default) or
+        with local energy-plus binary. The later is not thread-safe yet and less
+        stable (due to the difficulty to ensure same behaviour accross platforms.)
+        # TODO: ensure same behaviour across != platform
+        # TODO: ensure same behaviour with != versions
+
+        Arguments:
+            idf_file {str} -- the file describing the model (.idf)
+            weather_file {str} -- the file describing the weather data (.epw)
+
+        Keyword Arguments:
+            working_dir {str} -- working directory (default: {"."})
+            prefix {str} -- prefix of output file (default: {"eplus"})
+            idd_file {str} -- base energy-plus file (default: {None},
+                using the one provided by energy-plus)
+            out_dir {str} -- output_directory (default: {"/tmp"})
+            keep_data {bool} -- the data are put on temporary directory
+                if False (the default), this directory is deleted after the run.
+                Otherwise, the data will remain in place (default: {False})
+            docker {bool} -- if True, the simulation will run containerized
+                on docker image (cellier/eplus). (default: {True})
+                Thanks to Nicholas Long nicholas.long@nrel.gov for the base image.
+            ep_ver {str} -- the energy-plus version used (default: {"8-4-0"})
+            # TODO : write a nice tool to detect installed version of eplus
+            # for the != platforms (versioning in e+ seem strange..)
+
+        Output:
+            result_dataframes {pandas.DataFrame or
+                               list of pandas.DataFrame or
+                               None} --
+                for now, only the csv outputs are handled : the output of the
+                fonction will be None if any csv are generated, a pandas DataFrame
+                if only one csv is generated (which seems to be the usual user
+                case) or a list of DataFrames if many csv are generated.
+    """
+
 TODO
 ====
 
