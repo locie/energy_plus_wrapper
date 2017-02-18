@@ -110,12 +110,5 @@ TODO
 * Ensure stability and cross-platform compatibility (I need a windows beta tester with both native install and docker!)
 * Write a command-line tool (using click ?) ? Maybe not that useful..
 
-Credits
--------
-
-- `Distribute`_
-- `Buildout`_
-- `modern-package-template`_
-
-.. _Buildout: http://www.buildout.org/
-.. _Distribute: http://pypi.python.org/pypi/distribute
+.. Credits
+.. -------
