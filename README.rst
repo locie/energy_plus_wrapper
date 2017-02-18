@@ -12,6 +12,7 @@ Install
 For now, the package is available on PyPI, and via the github repo.
 
 .. code:: shell
+
     pip install energyplus-wrapper
     pip install git+git://github.com/celliern/energy_plus_wrapper.git
 
