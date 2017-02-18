@@ -59,7 +59,7 @@ def _assert_files(idf_file, weather_file, working_dir,
 
 
 def _build_command_line(tmp, idd_file, idf_file, weather_file,
-                        prefix, ep_ver, docker=True):
+                        prefix, docker=True):
     """Build the command line used in subprocess.Popen
 
     Construct the command line passed as argument to subprocess.Popen depending
@@ -70,10 +70,8 @@ def _build_command_line(tmp, idd_file, idf_file, weather_file,
                    '-v', '%s:/var/simdata/' % tmp,
                    'celliern/eplus',
                    'EnergyPlus',
-                   "-i", ("/var/simdata/%s" % idd_file.basename()
-                          if idd_file is not None
-                          else ("/usr/local/EnergyPlus-%s/Energy+.idd"
-                                % ep_ver)),
+                   *(("-i", "/var/simdata/%s" % idd_file.basename())
+                     if idd_file is not None else ()),
                    "-w", "/var/simdata/%s" % weather_file.basename(),
                    "-p", prefix,
                    "-d", "/var/simdata/",
@@ -83,9 +81,8 @@ def _build_command_line(tmp, idd_file, idf_file, weather_file,
         return command
     else:
         command = ['EnergyPlus',
-                   "-i", (tmp / idd_file.basename() if idd_file is not None
-                          else ("/usr/local/EnergyPlus-%s/Energy+.idd"
-                                % ep_ver)),
+                   *(("-i", tmp / idd_file.basename())
+                     if idd_file is not None else ()),
                    "-w", tmp / weather_file.basename(),
                    "-p", prefix,
                    "-d", tmp.abspath(),
@@ -101,8 +98,7 @@ def run(idf_file, weather_file,
         prefix="eplus",
         out_dir='/tmp/',
         keep_data=False,
-        docker=True,
-        ep_ver="8-4-0"):
+        docker=True):
     """
     energyplus runner using docker image (by default) or local installation.
 
@@ -160,8 +156,7 @@ def run(idf_file, weather_file,
         idf_file.copy(tmp)
 
         command = _build_command_line(tmp, idd_file, idf_file,
-                                      weather_file, prefix,
-                                      ep_ver, docker)
+                                      weather_file, prefix, docker)
         logger.debug('command line : %s' % ' '.join(command))
 
         logger.info('starting energy plus simulation...')
