@@ -2,10 +2,10 @@
 # coding=utf8
 
 import logging
-from path import Path, tempdir
 import subprocess
-import pandas as pd
 
+import pandas as pd
+from path import Path, tempdir
 
 logger = logging.getLogger(__name__)
 logger.handlers = []
@@ -66,29 +66,30 @@ def _build_command_line(tmp, idd_file, idf_file, weather_file,
     docker or local e+ installation is used.
     """
     if (docker_tag != '') and (docker_tag is not None):
-        command = ['docker', 'run', '--rm',
-                   '-v', '%s:/var/simdata/' % tmp,
-                   'celliern/energy_plus:%s' % docker_tag,
-                   'EnergyPlus',
-                   *(("-i", "/var/simdata/%s" % idd_file.basename())
-                     if idd_file is not None else ()),
-                   "-w", "/var/simdata/%s" % weather_file.basename(),
-                   "-p", prefix,
-                   "-d", "/var/simdata/",
-                   "-s", "d",
-                   "-r",
-                   "/var/simdata/%s" % idf_file.basename()]
+
+        command = (['docker', 'run', '--rm',
+                    '-v', '%s:/var/simdata/' % tmp,
+                    'celliern/energy_plus:%s' % docker_tag,
+                    'EnergyPlus',
+                    "-w", "/var/simdata/%s" % weather_file.basename(),
+                    "-p", prefix,
+                    "-d", "/var/simdata/"] +
+                   (["-i", "/var/simdata/%s" % idd_file.basename()]
+                    if idd_file is not None else []) +
+                   ["-s", "d",
+                    "-r",
+                    "/var/simdata/%s" % idf_file.basename()])
         return command
     else:
-        command = ['EnergyPlus',
-                   *(("-i", tmp / idd_file.basename())
-                     if idd_file is not None else ()),
-                   "-w", tmp / weather_file.basename(),
-                   "-p", prefix,
-                   "-d", tmp.abspath(),
-                   "-s", "d",
-                   "-r",
-                   tmp / idf_file.basename()]
+        command = (['EnergyPlus',
+                    "-w", tmp / weather_file.basename(),
+                    "-p", prefix,
+                    "-d", tmp.abspath()] +
+                   (["-i", "/var/simdata/%s" % idd_file.basename()]
+                    if idd_file is not None else []) +
+                   ["-s", "d",
+                    "-r",
+                    tmp / idf_file.basename()])
         return command
 
 

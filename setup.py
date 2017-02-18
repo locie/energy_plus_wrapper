@@ -5,7 +5,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 README = open(os.path.join(here, 'README.rst')).read()
 
 
-version = '0.1'
+version = '0.3'
 
 install_requires = []
 
@@ -21,7 +21,7 @@ setup(name='energyplus_wrapper',
       keywords='energy-plus wrapper docker',
       author='Nicolas Cellier',
       author_email='contact@nicolas-cellier.net',
-      url='',
+      url='https://github.com/celliern/energy_plus_wrapper/',
       license='DO WHAT THE FUCK YOU WANT TO',
       packages=find_packages('src'),
       package_dir={'': 'src'}, include_package_data=True,
