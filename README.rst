@@ -9,10 +9,10 @@ to make the link between the e+ building model tools written in python and the d
 Install
 =======
 
-For now, te package isn't available on PyPI, only on the github repo.
+For now, the package is available on PyPI, and via the github repo.
 
 .. code:: shell
-
+    pip install energyplus-wrapper
     pip install git+git://github.com/celliern/energy_plus_wrapper.git
 
 and
@@ -54,7 +54,7 @@ API
             prefix="eplus",
             out_dir='/tmp/',
             keep_data=False,
-            docker_tag='8.4.0'):
+            docker_tag='latest'):
     """
     energyplus runner using docker image (by default) or local installation.
 
