@@ -98,7 +98,7 @@ def run(idf_file, weather_file,
         prefix="eplus",
         out_dir='/tmp/',
         keep_data=False,
-        docker_tag='8.4.0'):
+        docker_tag='latest'):
     """
     energyplus runner using docker image (by default) or local installation.
 
@@ -130,7 +130,7 @@ def run(idf_file, weather_file,
             on docker image (cellier/energy_plus:{docker_tag}).
             Thanks to Nicholas Long nicholas.long@nrel.gov for the base image.
             If empty string or None, fallback to local installed e+.
-            (default: {"8.4.0"})
+            (default: {"latest"}, the 8.6.0 version.)
         # TODO : write a nice tool to detect installed version of eplus
         # for the != platforms (versioning in e+ seem strange..)
 
