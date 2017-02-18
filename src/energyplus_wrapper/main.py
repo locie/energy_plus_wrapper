@@ -59,16 +59,16 @@ def _assert_files(idf_file, weather_file, working_dir,
 
 
 def _build_command_line(tmp, idd_file, idf_file, weather_file,
-                        prefix, docker=True):
+                        prefix, docker_tag):
     """Build the command line used in subprocess.Popen
 
     Construct the command line passed as argument to subprocess.Popen depending
     docker or local e+ installation is used.
     """
-    if docker:
+    if (docker_tag != '') and (docker_tag is not None):
         command = ['docker', 'run', '--rm',
                    '-v', '%s:/var/simdata/' % tmp,
-                   'celliern/eplus',
+                   'celliern/energy_plus:%s' % docker_tag,
                    'EnergyPlus',
                    *(("-i", "/var/simdata/%s" % idd_file.basename())
                      if idd_file is not None else ()),
@@ -98,7 +98,7 @@ def run(idf_file, weather_file,
         prefix="eplus",
         out_dir='/tmp/',
         keep_data=False,
-        docker=True):
+        docker_tag='8.4.0'):
     """
     energyplus runner using docker image (by default) or local installation.
 
@@ -126,10 +126,11 @@ def run(idf_file, weather_file,
         keep_data {bool} -- the data are put on temporary directory
             if False (the default), this directory is deleted after the run.
             Otherwise, the data will remain in place (default: {False})
-        docker {bool} -- if True, the simulation will run containerized
-            on docker image (cellier/eplus). (default: {True})
+        docker_tag {str} -- if not empty, the simulation will run containerized
+            on docker image (cellier/energy_plus:{docker_tag}).
             Thanks to Nicholas Long nicholas.long@nrel.gov for the base image.
-        ep_ver {str} -- the energy-plus version used (default: {"8-4-0"})
+            If empty string or None, fallback to local installed e+.
+            (default: {"8.4.0"})
         # TODO : write a nice tool to detect installed version of eplus
         # for the != platforms (versioning in e+ seem strange..)
 
@@ -156,7 +157,7 @@ def run(idf_file, weather_file,
         idf_file.copy(tmp)
 
         command = _build_command_line(tmp, idd_file, idf_file,
-                                      weather_file, prefix, docker)
+                                      weather_file, prefix, docker_tag)
         logger.debug('command line : %s' % ' '.join(command))
 
         logger.info('starting energy plus simulation...')
@@ -166,7 +167,7 @@ def run(idf_file, weather_file,
             stderr=subprocess.STDOUT)
         with process.stdout:
             log_subprocess_output(process.stdout)
-        process.wait()
+        assert process.wait() == 0, "System call failure"
         logger.info('energy plus simulation ended')
 
         logger.debug(
