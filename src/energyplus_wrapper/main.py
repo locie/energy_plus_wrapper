@@ -85,7 +85,7 @@ def _build_command_line(tmp, idd_file, idf_file, weather_file,
                     "-w", tmp / weather_file.basename(),
                     "-p", prefix,
                     "-d", tmp.abspath()] +
-                   (["-i", "/var/simdata/%s" % idd_file.basename()]
+                   (["-i", tmp / idf_file.basename()]
                     if idd_file is not None else []) +
                    ["-s", "d",
                     "-r",
