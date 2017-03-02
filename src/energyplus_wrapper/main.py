@@ -99,6 +99,7 @@ def run(idf_file, weather_file,
         prefix="eplus",
         out_dir='/tmp/',
         keep_data=False,
+        keep_data_err=True,
         docker_tag='latest'):
     """
     energyplus runner using docker image (by default) or local installation.
@@ -192,7 +193,14 @@ def run(idf_file, weather_file,
             return
         if len(result_dataframes) == 1:
             return result_dataframes.pop()
-        return result_dataframes
-    finally:
         if not keep_data:
+                tmp.rmtree_p()
+        return result_dataframes
+    except AssertionError:
+        logger.error("energy plus run has failed")
+        if keep_data_err:
+            logger.error("data kept on folder %s" % tmp.abspath())
+            raise RuntimeError("energy plus run has failed, data kept on folder %s" % tmp.abspath())
+        else:
             tmp.rmtree_p()
+            raise RuntimeError("energy plus run has failed")
