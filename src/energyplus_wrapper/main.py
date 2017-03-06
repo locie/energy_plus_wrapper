@@ -213,7 +213,7 @@ def run(idf_file, weather_file,
         if not keep_data:
                 tmp.rmtree_p()
         return result_dataframes
-    except AssertionError:
+    except RuntimeError as e:
         logger.error("energy plus run has failed")
         if keep_data_err:
             logger.error("data kept on folder %s" % tmp.abspath())
