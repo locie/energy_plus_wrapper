@@ -178,8 +178,7 @@ def run(idf_file, weather_file,
     logger.info('check consistency of input files')
     idf_file, weather_file, working_dir, idd_file, out_dir = \
         _assert_files(idf_file, weather_file, working_dir, idd_file, out_dir)
-    try:
-        tmp = tempdir(prefix='eplus_run_', dir=out_dir)
+    with tempdir(prefix='eplus_run_', dir=out_dir) as tmp:
         logger.debug('tempory dir (%s) created' % tmp)
 
         if idd_file is not None:
@@ -210,14 +209,4 @@ def run(idf_file, weather_file,
             return
         if len(result_dataframes) == 1:
             return result_dataframes.pop()
-        if not keep_data:
-                tmp.rmtree_p()
         return result_dataframes
-    except RuntimeError as e:
-        logger.error("energy plus run has failed")
-        if keep_data_err:
-            logger.error("data kept on folder %s" % tmp.abspath())
-            raise RuntimeError("energy plus run has failed, data kept on folder %s" % tmp.abspath())
-        else:
-            tmp.rmtree_p()
-            raise RuntimeError("energy plus run has failed")
