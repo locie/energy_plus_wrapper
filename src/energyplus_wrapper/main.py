@@ -33,34 +33,39 @@ def _assert_files(idf_file, weather_file, working_dir,
     if idd_file is not None:
         idd_file = Path(idd_file)
         logger.debug('looking for idd file (%s)' % idd_file.abspath())
-        assert idd_file.isfile(), "IDD file not found"
+        if not idd_file.isfile():
+            raise IOError("IDD file not found")
 
     working_dir = Path(working_dir)
     logger.debug(
         'checking if working directory (%s) exist' %
         working_dir.abspath())
-    assert working_dir.isdir(), "Working directory does not exist"
+    if not working_dir.isdir():
+        raise IOError("Working directory does not exist")
 
     if out_dir is not None:
         out_dir = Path(out_dir)
         logger.debug(
             'checking if output directory (%s) exist' %
             out_dir.abspath())
-        assert out_dir.isdir(), "Output directory does not exist"
+        if not out_dir.isdir():
+            raise IOError("Output directory does not exist")
 
     weather_file = Path(weather_file)
     logger.debug('looking for weather file (%s)' % weather_file.abspath())
-    assert weather_file.isfile(), "Weather file not found"
+    if not weather_file.isfile():
+        raise IOError("Weather file not found")
 
     idf_file = Path(idf_file)
     logger.debug('looking for idf file (%s)' % idf_file.abspath())
-    assert idf_file.isfile(), "IDF file not found"
+    if not idf_file.isfile():
+        raise IOError("IDF file not found")
 
     return idf_file, weather_file, working_dir, idd_file, out_dir
 
 
 def exec_command_line(tmp, idd_file, idf_file, weather_file,
-                      prefix, docker_tag):
+                      prefix, docker_tag, keep_data_err, working_dir):
     """Build the command line used in subprocess.Popen
 
     Construct the command line passed as argument to subprocess.Popen depending
@@ -90,6 +95,8 @@ def exec_command_line(tmp, idd_file, idf_file, weather_file,
         with process.stdout:
             log_subprocess_output(process.stdout)
         if process.wait() != 0:
+            if keep_data_err:
+                tmp.copytree(working_dir / "%s_failed" % tmp.basename())
             for action in ('kill', 'rm'):
                 kill_process = subprocess.Popen(['docker', action, 'ctr_name'],
                                                 stdout=subprocess.PIPE,
@@ -185,8 +192,10 @@ def run(idf_file, weather_file,
             idd_file.copy(tmp)
         weather_file.copy(tmp)
         idf_file.copy(tmp)
+
         exec_command_line(tmp, idd_file, idf_file,
-                          weather_file, prefix, docker_tag)
+                          weather_file, prefix, docker_tag,
+                          keep_data_err, working_dir)
 
         logger.debug(
             'files generated at the end of the simulation: %s' %
@@ -209,4 +218,6 @@ def run(idf_file, weather_file,
             return
         if len(result_dataframes) == 1:
             return result_dataframes.pop()
+        if keep_data:
+            tmp.copytree(working_dir / tmp.basename())
         return result_dataframes
