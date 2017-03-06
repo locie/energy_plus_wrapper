@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # coding=utf8
 
+import os
 import logging
 import subprocess
 
@@ -58,16 +59,16 @@ def _assert_files(idf_file, weather_file, working_dir,
     return idf_file, weather_file, working_dir, idd_file, out_dir
 
 
-def _build_command_line(tmp, idd_file, idf_file, weather_file,
-                        prefix, docker_tag):
+def exec_command_line(tmp, idd_file, idf_file, weather_file,
+                      prefix, docker_tag):
     """Build the command line used in subprocess.Popen
 
     Construct the command line passed as argument to subprocess.Popen depending
     docker or local e+ installation is used.
     """
     if (docker_tag != '') and (docker_tag is not None):
-
-        command = (['docker', 'run', '--rm',
+        control_name = "docker_%i" % os.getpid()
+        command = (['docker', 'run', '--rm', '--name', control_name,
                     '-v', '%s:/var/simdata/' % tmp,
                     'celliern/energy_plus:%s' % docker_tag,
                     'EnergyPlus',
@@ -79,7 +80,24 @@ def _build_command_line(tmp, idd_file, idf_file, weather_file,
                    ["-s", "d",
                     "-r",
                     "/var/simdata/%s" % idf_file.basename()])
-        return command
+        logger.debug('command line : %s' % ' '.join(command))
+
+        logger.info('starting energy plus simulation...')
+        process = subprocess.Popen(
+            command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT)
+        with process.stdout:
+            log_subprocess_output(process.stdout)
+        if process.wait() != 0:
+            for action in ('kill', 'rm'):
+                kill_process = subprocess.Popen(['docker', action, 'ctr_name'],
+                                                stdout=subprocess.PIPE,
+                                                stderr=subprocess.PIPE)
+                if kill_process.wait() != 0:
+                    raise RuntimeError(kill_process.stderr.read())
+            raise RuntimeError("System call failure")
+
     else:
         command = (['EnergyPlus',
                     "-w", tmp / weather_file.basename(),
@@ -90,7 +108,18 @@ def _build_command_line(tmp, idd_file, idf_file, weather_file,
                    ["-s", "d",
                     "-r",
                     tmp / idf_file.basename()])
-        return command
+        logger.debug('command line : %s' % ' '.join(command))
+
+        logger.info('starting energy plus simulation...')
+        process = subprocess.Popen(
+            command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT)
+        with process.stdout:
+            log_subprocess_output(process.stdout)
+        if process.wait() != 0:
+            raise RuntimeError("System call failure")
+    logger.info('energy plus simulation ended')
 
 
 def run(idf_file, weather_file,
@@ -157,20 +186,8 @@ def run(idf_file, weather_file,
             idd_file.copy(tmp)
         weather_file.copy(tmp)
         idf_file.copy(tmp)
-
-        command = _build_command_line(tmp, idd_file, idf_file,
-                                      weather_file, prefix, docker_tag)
-        logger.debug('command line : %s' % ' '.join(command))
-
-        logger.info('starting energy plus simulation...')
-        process = subprocess.Popen(
-            command,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT)
-        with process.stdout:
-            log_subprocess_output(process.stdout)
-        assert process.wait() == 0, "System call failure"
-        logger.info('energy plus simulation ended')
+        exec_command_line(tmp, idd_file, idf_file,
+                          weather_file, prefix, docker_tag)
 
         logger.debug(
             'files generated at the end of the simulation: %s' %
