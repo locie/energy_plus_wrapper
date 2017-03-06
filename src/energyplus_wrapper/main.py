@@ -65,7 +65,7 @@ def _assert_files(idf_file, weather_file, working_dir,
 
 
 def exec_command_line(tmp, idd_file, idf_file, weather_file,
-                      prefix, docker_tag, keep_data_err, working_dir):
+                      prefix, docker_tag, keep_data_err, out_dir):
     """Build the command line used in subprocess.Popen
 
     Construct the command line passed as argument to subprocess.Popen depending
@@ -96,7 +96,7 @@ def exec_command_line(tmp, idd_file, idf_file, weather_file,
             log_subprocess_output(process.stdout)
         if process.wait() != 0:
             if keep_data_err:
-                failed_dir = tmp / "failed"
+                failed_dir = out_dir / "failed"
                 failed_dir.mkdir_p()
                 tmp.copytree(failed_dir)
             for action in ('kill', 'rm'):
@@ -129,7 +129,7 @@ def exec_command_line(tmp, idd_file, idf_file, weather_file,
             log_subprocess_output(process.stdout)
         if process.wait() != 0:
             if keep_data_err:
-                failed_dir = tmp / "failed"
+                failed_dir = out_dir / "failed"
                 failed_dir.mkdir_p()
                 tmp.copytree(failed_dir)
             tmp.rmtree_p()
@@ -203,7 +203,7 @@ def run(idf_file, weather_file,
 
         exec_command_line(tmp, idd_file, idf_file,
                           weather_file, prefix, docker_tag,
-                          keep_data_err, working_dir)
+                          keep_data_err, out_dir)
 
         logger.debug(
             'files generated at the end of the simulation: %s' %
