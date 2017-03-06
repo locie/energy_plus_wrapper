@@ -10,8 +10,6 @@ from energyplus_wrapper import run
                                  "8.4.0", "8.5.0",
                                  "8.6.0", "latest"])
 def test_docker_run(tag):
-    run('tests/in.idf', 'tests/in.epw', docker_tag=tag)
-
-
-def test_local_run():
-    run('tests/in.idf', 'tests/in.epw', docker_tag="")
+    run('tests/in.idf',
+        'tests/in.epw',
+        docker_tag=tag)
