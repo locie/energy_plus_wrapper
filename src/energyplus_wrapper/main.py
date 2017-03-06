@@ -103,6 +103,7 @@ def exec_command_line(tmp, idd_file, idf_file, weather_file,
                                                 stderr=subprocess.PIPE)
                 if kill_process.wait() != 0:
                     raise RuntimeError(kill_process.stderr.read())
+            tmp.rmtree_p()
             raise RuntimeError("System call failure")
 
     else:
@@ -125,6 +126,9 @@ def exec_command_line(tmp, idd_file, idf_file, weather_file,
         with process.stdout:
             log_subprocess_output(process.stdout)
         if process.wait() != 0:
+            if keep_data_err:
+                tmp.copytree(working_dir / "%s_failed" % tmp.basename())
+            tmp.rmtree_p()
             raise RuntimeError("System call failure")
     logger.info('energy plus simulation ended')
 
@@ -220,4 +224,5 @@ def run(idf_file, weather_file,
             return result_dataframes.pop()
         if keep_data:
             tmp.copytree(working_dir / tmp.basename())
+        tmp.rmtree_p()
         return result_dataframes
