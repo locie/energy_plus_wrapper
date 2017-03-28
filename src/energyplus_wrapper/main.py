@@ -98,7 +98,7 @@ def exec_command_line(tmp, idd_file, idf_file, weather_file,
             if keep_data_err:
                 failed_dir = out_dir / "failed"
                 failed_dir.mkdir_p()
-                tmp.copytree(failed_dir)
+                tmp.copytree(failed_dir / tmp.basename())
             for action in ('kill', 'rm'):
                 kill_process = subprocess.Popen(['docker', action, 'ctr_name'],
                                                 stdout=subprocess.PIPE,
@@ -131,7 +131,7 @@ def exec_command_line(tmp, idd_file, idf_file, weather_file,
             if keep_data_err:
                 failed_dir = out_dir / "failed"
                 failed_dir.mkdir_p()
-                tmp.copytree(failed_dir)
+                tmp.copytree(failed_dir / tmp.basename())
             tmp.rmtree_p()
             raise RuntimeError("System call failure")
     logger.info('energy plus simulation ended')
