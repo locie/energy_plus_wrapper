@@ -122,16 +122,13 @@ def run(idf_file, weather_file,
         keep_data_err=True,
         bin_path=None):
     """
-    energyplus runner using docker image (by default) or local installation.
+    energyplus runner using local installation.
 
     Run an energy-plus simulation with the model file (a .idf file),
     a weather file (should be a .epw) as required arguments. The output will be
     a pandas dataframe or a list of dataframe or None, depending of how many
     csv has been generated during the simulation, and requested in the model
-    file.
-    The simulation can be containerized inside a docker image (by default) or
-    with local energy-plus binary. The later is not thread-safe yet and less
-    stable (due to the difficulty to ensure same behaviour across platforms.)
+    file. The run is multiprocessing_safe
 
     Parameters
     ----------
@@ -159,10 +156,6 @@ def run(idf_file, weather_file,
         if provided, path to the EnergyPlus binary. If not provided (default),
         find it on EPLUS_DIRECTORY / EnergyPlus (if EPLUS_DIRECTORY set), or
         consider that EnergyPlus is on the path
-
-    Output
-    ------
-    result_dataframes! ()
 
 
     Returns
