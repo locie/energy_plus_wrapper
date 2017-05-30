@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # coding=utf8
 
+import os
 import logging
 import subprocess
 
@@ -14,9 +15,6 @@ logger.addHandler(logging.NullHandler())
 eplus_logger = logging.getLogger('.'.join([__name__, 'e+_log']))
 eplus_logger.handlers = []
 eplus_logger.addHandler(logging.NullHandler())
-
-
-EPLUS_DIRECTORY = None
 
 
 def _log_subprocess_output(pipe):
@@ -39,7 +37,8 @@ def _assert_files(idf_file, weather_file, working_dir,
             return Path("Energy+.idd")
         return Path(idd_file)
 
-    idd_file = get_idd(EPLUS_DIRECTORY, idd_file)
+    idd_file = get_idd(os.environ.get('EPLUS_DIR', None),
+                       idd_file)
     logger.debug('looking for idd file (%s)' % idd_file.abspath())
 
     if not idd_file.isfile():
@@ -86,7 +85,8 @@ def _exec_command_line(tmp, idd_file, idf_file, weather_file,
             return 'EnergyPlus'
         return bin_path
 
-    command = ([get_bin_path(EPLUS_DIRECTORY, bin_path),
+    command = ([get_bin_path(os.environ.get('EPLUS_DIR', None),
+                             bin_path),
                 "-w", tmp / weather_file.basename(),
                 "-p", prefix,
                 "-d", tmp.abspath(),
@@ -140,7 +140,7 @@ def run(idf_file, weather_file,
         working directory (default: ".")
     idd_file : None, optional
         base energy-plus file (default: None, find Energy+.idd in the
-        e+ install directory if EPLUS_DIRECTORY set, else find it on current
+        e+ install directory if $EPLUS_DIR set, else find it on current
         folder.)
     prefix : str, optional
         prefix of output files (default: "eplus")
@@ -154,7 +154,7 @@ def run(idf_file, weather_file,
         simulation fail. (default: True)
     bin_path : None, optional
         if provided, path to the EnergyPlus binary. If not provided (default),
-        find it on EPLUS_DIRECTORY / EnergyPlus (if EPLUS_DIRECTORY set), or
+        find it on $EPLUS_DIR / EnergyPlus (if $EPLUS_DIR set), or
         consider that EnergyPlus is on the path
 
 

@@ -1,0 +1,32 @@
+ ReadVarsESO
+ processing:/tmp/eplus_run_wfj3qmlu/in.rvi
+ input file:/tmp/eplus_run_wfj3qmlu/eplus.eso
+ output file:/tmp/eplus_run_wfj3qmlu/eplus.csv
+ getting all vars from:/tmp/eplus_run_wfj3qmlu/eplus.eso
+  number variables requested for output=         122
+ ReadVars Run Time=00hr 00min  0.05sec
+ ReadVarsESO program completed successfully.
+ ReadVarsESO
+ processing:/tmp/eplus_run_wfj3qmlu/in.mvi
+ input file:/tmp/eplus_run_wfj3qmlu/eplus.mtr
+ output file:/tmp/eplus_run_wfj3qmlu/eplus-meter.csv
+ getting all vars from:/tmp/eplus_run_wfj3qmlu/eplus.mtr
+  number variables requested for output=          29
+ ReadVars Run Time=00hr 00min  0.04sec
+ ReadVarsESO program completed successfully.
+ ReadVarsESO
+ processing:/tmp/eplus_run_xy_4l231/in.rvi
+ input file:/tmp/eplus_run_xy_4l231/eplus.eso
+ output file:/tmp/eplus_run_xy_4l231/eplus.csv
+ getting all vars from:/tmp/eplus_run_xy_4l231/eplus.eso
+  number variables requested for output=         122
+ ReadVars Run Time=00hr 00min  0.05sec
+ ReadVarsESO program completed successfully.
+ ReadVarsESO
+ processing:/tmp/eplus_run_xy_4l231/in.mvi
+ input file:/tmp/eplus_run_xy_4l231/eplus.mtr
+ output file:/tmp/eplus_run_xy_4l231/eplus-meter.csv
+ getting all vars from:/tmp/eplus_run_xy_4l231/eplus.mtr
+  number variables requested for output=          29
+ ReadVars Run Time=00hr 00min  0.03sec
+ ReadVarsESO program completed successfully.
