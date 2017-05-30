@@ -39,6 +39,7 @@ API
 ===
 
 .. code:: python
+
     def run(idf_file, weather_file,
         working_dir=".",
         idd_file=None,
