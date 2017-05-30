@@ -131,39 +131,47 @@ def run(idf_file, weather_file,
     file.
     The simulation can be containerized inside a docker image (by default) or
     with local energy-plus binary. The later is not thread-safe yet and less
-    stable (due to the difficulty to ensure same behaviour accross platforms.)
-    # TODO: ensure same behaviour across != platform
-    # TODO: ensure same behaviour with != versions
+    stable (due to the difficulty to ensure same behaviour across platforms.)
 
-    Arguments:
-        idf_file {str} -- the file describing the model (.idf)
-        weather_file {str} -- the file describing the weather data (.epw)
+    Parameters
+    ----------
+    idf_file : str
+        the file describing the model (.idf)
+    weather_file : str
+        the file describing the weather data (.epw)
+    working_dir : str, optional
+        working directory (default: ".")
+    idd_file : None, optional
+        base energy-plus file (default: None, find Energy+.idd in the
+        e+ install directory if EPLUS_DIRECTORY set, else find it on current
+        folder.)
+    prefix : str, optional
+        prefix of output files (default: "eplus")
+    out_dir : str, optional
+        Output directory (default: "/tmp")
+    keep_data : bool, optional
+        if True, do not remove the temporary folder after the simulation
+        (default: False)
+    keep_data_err : bool, optional
+        if True, copy the temporary folder on out_dir / "failed" if the
+        simulation fail. (default: True)
+    bin_path : None, optional
+        if provided, path to the EnergyPlus binary. If not provided (default),
+        find it on EPLUS_DIRECTORY / EnergyPlus (if EPLUS_DIRECTORY set), or
+        consider that EnergyPlus is on the path
 
-    Keyword Arguments:
-        working_dir {str} -- working directory (default: {"."})
-        prefix {str} -- prefix of output file (default: {"eplus"})
-        idd_file {str} -- base energy-plus file (default: {None},
-            using the one provided by energy-plus)
-        out_dir {str} -- output_directory (default: {"/tmp"})
-        keep_data {bool} -- the data are put on temporary directory
-            if False (the default), this directory is deleted after the run.
-            Otherwise, the data will remain in place (default: {False})
-        docker_tag {str} -- if not empty, the simulation will run containerized
-            on docker image (cellier/energy_plus:{docker_tag}).
-            Thanks to Nicholas Long nicholas.long@nrel.gov for the base image.
-            If empty string or None, fallback to local installed e+.
-            (default: {"latest"}, the 8.6.0 version.)
-        # TODO : write a nice tool to detect installed version of eplus
-        # for the != platforms (versioning in e+ seem strange..)
+    Output
+    ------
+    result_dataframes! ()
 
-    Output:
-        result_dataframes {pandas.DataFrame or
-                           list of pandas.DataFrame or
-                           None} --
-            for now, only the csv outputs are handled : the output of the
-            fonction will be None if any csv are generated, a pandas DataFrame
-            if only one csv is generated (which seems to be the usual user
-            case) or a list of DataFrames if many csv are generated.
+
+    Returns
+    -------
+    pandas.DataFrame or list of pandas.DataFrame or None
+        Only the csv outputs are handled : the output of the
+        function will be None if any csv are generated, a pandas DataFrame
+        if only one csv is generated (which seems to be the usual user
+        case) or a list of DataFrames if many csv are generated.
     """
 
     logger.info('check consistency of input files')
