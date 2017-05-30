@@ -1,0 +1,680 @@
+<html>
+<head><title>EnergyPlus ChangeLog</title></head>
+<body>
+<style>
+table, th, td {
+ border: 1px solid black;
+ border-collapse: collapse;
+}
+th,td {
+ padding: 6px;
+}
+</style>
+<h1>EnergyPlus ChangeLog</h1>
+This file is auto-generated from merged pull requests in the repository.
+<h2>New Features</h2>
+<table border="1" >
+ <tr>
+  <th>PR #</th>
+  <th>Description</th>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/4698">4698</a></td>
+  <td>Residential Heat Pump Water Heater Improvements</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/4752">4752</a></td>
+  <td>New Variable Speed Heat Pump Water Heater Model</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/4849">4849</a></td>
+  <td>Implement capability for DX coils to transfer condenser heat to a zone</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/4869">4869</a></td>
+  <td>Convert EnergyPlus Documentation to a Markdown Basis</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/4881">4881</a></td>
+  <td>Update Life cycle costing data set files for 2013 and 2014</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/4894">4894</a></td>
+  <td>Add Fault Simulation for Dirty Air Filters</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/4909">4909</a></td>
+  <td>Implement return water reset setpoint manager</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/4913">4913</a></td>
+  <td>Add HotWater preheat coil as valid type in HVACTemplate systems</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/4940">4940</a></td>
+  <td>Add autosizing to HR units, Evap coolers, Elec baseboard, dehumidifiers, and wwhp</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5002">5002</a></td>
+  <td>Allow accounting for direct-to-zone DOAS on zone sizing.</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5010">5010</a></td>
+  <td>Add New DemandManager:Ventilation Capabilities</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5017">5017</a></td>
+  <td>Add PlantEquipmentOperation:ThermalEnergyStorage controls</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5026">5026</a></td>
+  <td>New VRF Heat Pump Model</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5068">5068</a></td>
+  <td>Additional Water to Air Heat Pump Example Files</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5081">5081</a></td>
+  <td>Room airflow network</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5088">5088</a></td>
+  <td>Add Multiple Tower Support in Condenser Entering Temp Reset Setpoint Managers</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5091">5091</a></td>
+  <td>Added multi-speed fan use with 4Pipe Fancoil unit and water coils in Unitary System</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5107">5107</a></td>
+  <td>Fill some gaps in HVAC component configuration support</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5123">5123</a></td>
+  <td>Link Infiltration to HVAC Operation and Add Return Air Flow Controls</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5129">5129</a></td>
+  <td>Four pipe beam air terminal</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5131">5131</a></td>
+  <td>Add CO2-based Proportional Demand Controlled Ventilation Based on Design Occupancy</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5152">5152</a></td>
+  <td>Improving Ground Temperature Models</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5154">5154</a></td>
+  <td>Add new report object: Output:Table:Annual</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5220">5220</a></td>
+  <td>Added component matrix to IO Ref.</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5256">5256</a></td>
+  <td>Tabular reports show only last year in multiple year run period.</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5293">5293</a></td>
+  <td>Add new output variables for ZoneHVAC:IdealLoadsAirSystem supply and outdoor air flow rates</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5297">5297</a></td>
+  <td>Add conduction finite difference node heat flux output</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5308">5308</a></td>
+  <td>Add output for node specific heat</td>
+ </tr>
+</table>
+<h2>Performance Enhancements</h2>
+<table border="1" >
+ <tr>
+  <th>PR #</th>
+  <th>Description</th>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/4843">4843</a></td>
+  <td>Updates to ObjexxFCL and 2+D arrays for row-major</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/4928">4928</a></td>
+  <td>ObjexxFCL Array grow-friendly API and reverse iterator extensions/fixups</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/4938">4938</a></td>
+  <td>Minor performance tweaks</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5008">5008</a></td>
+  <td>DaylightingManager performance refactoring</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5049">5049</a></td>
+  <td>Update SQLite library to 3.8.11</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5066">5066</a></td>
+  <td>WindowComplexManager+ performance tuning</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5151">5151</a></td>
+  <td>Performance tweaks and a few bug fixes contributed by Autodesk and an ObjexxFCL update</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5226">5226</a></td>
+  <td>ObjexxFCL vector-like API extensions</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5347">5347</a></td>
+  <td>ObjexxFCL update</td>
+ </tr>
+</table>
+<h2>Defects Repaired</h2>
+<table border="1" >
+ <tr>
+  <th>PR #</th>
+  <th>Description</th>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/4797">4797</a></td>
+  <td>Trap invalid ZoneMixer name in AirTerminal:SingleDuct:ConstantVolume:FourPipeInduction</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/4800">4800</a></td>
+  <td>Corrected arguments for scheduled solar gain function in complex glazing surface</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/4833">4833</a></td>
+  <td>Allow HX to control to set point temperature regardless of operating mode</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/4872">4872</a></td>
+  <td>Fix issues with previous version transition tools</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/4879">4879</a></td>
+  <td>Addresses #4662 SetupEMSActuator is missing duplicates. </td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/4880">4880</a></td>
+  <td>Fix various typos and other minor edits in documentation only</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/4885">4885</a></td>
+  <td>Fix typos in LowTemperatureRadiant sizing messages</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/4892">4892</a></td>
+  <td>Fix HVACTemplate:System:ConstantVolume preheat, economizer, and setpoint manager problems</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/4896">4896</a></td>
+  <td>Fix high speed UA autosizing fatal error for FluidCooler:TwoSpeed</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/4897">4897</a></td>
+  <td>Address the water-source-heat-pump SHR greater than 1 issue</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/4908">4908</a></td>
+  <td>Revised IO Ref on VRF condenser Rated Heating Capacity Sizing Ratio</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/4917">4917</a></td>
+  <td>HVACTemplate clean up initial schedules and schedule type</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/4918">4918</a></td>
+  <td>Improve chilled water storage tank deadband control</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/4920">4920</a></td>
+  <td>Fix Electric EIR Chiller model delivering chilled water when off</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/4930">4930</a></td>
+  <td>HVACTemplate - remove old plant loop load distribution types</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/4937">4937</a></td>
+  <td>Clarify HVAC Sizing Summary report headings, footnotes and documentation</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/4949">4949</a></td>
+  <td>Update IDD note for VRF systems</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/4966">4966</a></td>
+  <td>Fixes out-of-order IDD numbering on inputs for slinky GHX</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/4981">4981</a></td>
+  <td>Fixed ABUPS report row total for water and corrected checksum error message</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/4990">4990</a></td>
+  <td>Address documentation issues in 4906</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/4998">4998</a></td>
+  <td>Fix bugs in sqlite timeseries output and add IDF parsing capabilities within unit tests</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5005">5005</a></td>
+  <td>Add Transition Rules for HVACTemplate Plant Loop Objects</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5009">5009</a></td>
+  <td>Initialize plenum induced air node conditions fix 4926</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5012">5012</a></td>
+  <td>Reset design outlet humidity ratio when entering humidity ratio is less to prevent SHR>1 in DX coil sizing</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5019">5019</a></td>
+  <td>Fix ZoneHVAC:VentilatedSlab fan power and output reporting</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5023">5023</a></td>
+  <td>Fix humidifier bug issue #4992</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5024">5024</a></td>
+  <td>Fixed OutdoorDryBulbTemperature Gradient and added unit test from 5014</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5025">5025</a></td>
+  <td>4973 heatpump defrost bug</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5028">5028</a></td>
+  <td>SwimmingPool:Indoor Maximum Water Flow Rate Input and Output Corrected to be Volume Instead of Mass</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5038">5038</a></td>
+  <td>Fix non-legacy prefix for sqlite error files.</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5043">5043</a></td>
+  <td>fixing vshpwh stratified tank bug</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5047">5047</a></td>
+  <td>Misc Documention Fixes</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5059">5059</a></td>
+  <td>Fix search for ReadVarsESO in installed package directory structure.</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5065">5065</a></td>
+  <td>Various documentation fixes (#4956 #4997)</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5071">5071</a></td>
+  <td>Fix broken links in documentation</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5072">5072</a></td>
+  <td>Reset variables at end of warmup</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5078">5078</a></td>
+  <td>Added SwimmingPool Floor object list in IDD</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5080">5080</a></td>
+  <td>Fix writing to input processing error file (*.iperr) when using the CLI</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5082">5082</a></td>
+  <td>Fix for attempts to write output to a directory without permissions</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5084">5084</a></td>
+  <td>Corrected False EMS Sensor Error</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5090">5090</a></td>
+  <td>Add Missing evapotranspiration parameter in PipingSystem:Underground:Domain Docs</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5096">5096</a></td>
+  <td>Clean out non-ascii characters in source code and test files</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5097">5097</a></td>
+  <td>Cleanup bad 8.2 to 8.3 transition comments for slab object</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5100">5100</a></td>
+  <td>Fix naming issues in ground domain documentation</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5102">5102</a></td>
+  <td>Fix AirflowNerwork Error Output to Report Missing Zone</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5103">5103</a></td>
+  <td>Fixed Capitalization Errors in IDD</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5106">5106</a></td>
+  <td>ExpandObjects support on Linux command line</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5114">5114</a></td>
+  <td>Corrected leap year adjustments in scheduled values for WeatherProperty:SkyTemperature</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5116">5116</a></td>
+  <td>Using sea level atmospheric pressure for HPWH ratings</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5117">5117</a></td>
+  <td>Fix evaporator condenser pump autosizing</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5124">5124</a></td>
+  <td>HPWH Equipment Sequence Number Error to Warning</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5132">5132</a></td>
+  <td>Fix to Wrapped Condenser HPWH connections to coil when there is more than one HPWH</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5135">5135</a></td>
+  <td>#4950 changes to correct ReverseCycle Timed defrost</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5136">5136</a></td>
+  <td>EvaporativeCooler:*:ResearchSpecial Primary Air Flow autosize and reporting problems</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5137">5137</a></td>
+  <td> ZoneHVAC:LowTemperatureRadiant:* autosizing and sclabale sizing problems</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5142">5142</a></td>
+  <td>Corrected IO Ref for Thermostat Schedule Priority</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5144">5144</a></td>
+  <td>101615016 coil cooling dx multi speed requires waste heat function</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5145">5145</a></td>
+  <td>4942 Revisions - hard-sized VRF condenser water flow rate not passed …</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5146">5146</a></td>
+  <td>Correct Humidity Ratio control variable false warning message in Controller:WaterCoil</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5147">5147</a></td>
+  <td>Fix AirloopHVAC:UnitarySystem with variable speed coils and setpoint control</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5161">5161</a></td>
+  <td>101884090  new venting availability schedule</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5164">5164</a></td>
+  <td>Avoid crash if there is a VRF terminal unit input error</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5165">5165</a></td>
+  <td>Fixing docs for stratified tank</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5166">5166</a></td>
+  <td>Fix ZoneHVAC:OutdoorAirUnit component autosizing</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5175">5175</a></td>
+  <td>Fix daylighting shape test for isosceles trapezoid surfaces which were incorrectly marked as rectangular</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5176">5176</a></td>
+  <td>Make waste heat inputs optional for Coil:*:DX:Multispeed</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5177">5177</a></td>
+  <td>Renames fan coil capacity control method "MultiStageFan" with "MultiSpeedFan"</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5178">5178</a></td>
+  <td>Collection of Variable Speed Equipment issue fixes</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5179">5179</a></td>
+  <td>UnitarySystem missing supply air flow method causes error when coil has no flow rate</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5180">5180</a></td>
+  <td>Add \choice and \object-list fields in IDD for Inlet and Supply Side Mixers</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5182">5182</a></td>
+  <td>Fix OA Controller Max Iteration Issue and Change Outdoor Air HX Control BypassWhenOAFlowGreaterThanMinimum</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5183">5183</a></td>
+  <td>102497862 user file crashes in airflow network calc wind pressure coeffs with array bounds error #4875</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5184">5184</a></td>
+  <td>Improve handling water to water heat pumps on plant loops</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5186">5186</a></td>
+  <td>Fix issue related to ASHRAE Climate Zone and Description. </td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5191">5191</a></td>
+  <td>97668326 whole building load (Issue# 4984)</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5192">5192</a></td>
+  <td>Revised html reporting for zone list multipliers</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5196">5196</a></td>
+  <td>Make "autosize" the default for tube length for ZoneHVAC:LowTemperatureRadiant:*</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5198">5198</a></td>
+  <td>Collection of small, mostly documentation, fixes</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5202">5202</a></td>
+  <td>Change single zone reheat setpoint manager to use actual OA fraction when in deadband</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5206">5206</a></td>
+  <td>Warn when the compact schedule minute does not line up with time step</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5208">5208</a></td>
+  <td>Updating IDD and error handling for GHX:Vertical</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5213">5213</a></td>
+  <td>Solved convergence failure with different heating and cooling flow rates with airflow network</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5214">5214</a></td>
+  <td>Fix air mass flow rate in radiative convective HW baseboard heater</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5215">5215</a></td>
+  <td>Avoid crash solar shading clippoly function</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5218">5218</a></td>
+  <td>#4298-Recurring-error-with-Heat-Exchanger-when-using-cycling-fan-system</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5223">5223</a></td>
+  <td>Fix controller mechanical ventilation array bounds error</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5271">5271</a></td>
+  <td>4665 Heat Pump Water Heater Energy Balance</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5275">5275</a></td>
+  <td>Allow SetpointManager:OutdoorAirReset to work with positive or negative slope</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5283">5283</a></td>
+  <td>Correct ground temperature model index for Site:GroundDomain:Basement</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5289">5289</a></td>
+  <td>Improved flushing of output per line</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5290">5290</a></td>
+  <td>Revise memory allocation in FMU import libraries</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5291">5291</a></td>
+  <td>Fix EMS actuators for dual temperature setpoints</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5292">5292</a></td>
+  <td>Fix invalid IDD and IDF version warnings in input processor</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5295">5295</a></td>
+  <td>Change how the TimeBins work so that rounding occurs </td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5300">5300</a></td>
+  <td>Add ElectricStorage end-use to fix misplaced storage in ABUPS Electric Loads Satisfied table</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5304">5304</a></td>
+  <td>Fix uninitialized variables found by address santizer</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5305">5305</a></td>
+  <td>Fix SingleSpeedFluidCooler GetInput autosize checking </td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5307">5307</a></td>
+  <td>Fix calculation of node RH, wetbulb, and dewpoint for EMS sensors if not also requested as an output variable</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5309">5309</a></td>
+  <td>Add RegisterPlantCompDesignFlow for Refrigeration:Condenser:WaterCooled</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5315">5315</a></td>
+  <td>Fix RoomAirNodeAFNInternalGains idd metadata</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5322">5322</a></td>
+  <td>Fix transition crash when shading:zone:detailed has a blank number vertices</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5323">5323</a></td>
+  <td>Missing GroundDomain RDD variables and doc updates</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5324">5324</a></td>
+  <td>Water Main correlation fix for southern latitudes</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5327">5327</a></td>
+  <td>Fixed total number of hours not met by adding variable reset </td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5331">5331</a></td>
+  <td>Fix crash when assigning 2 unitary system to same zone</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5333">5333</a></td>
+  <td>Plant heat exchanger dual deadband control fixed to run when beneficial</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5336">5336</a></td>
+  <td>Correct humidity controls for dehumidification - Contoller:WaterCoil and SetpointManager:SingleZone:Humidity:Maximum </td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5337">5337</a></td>
+  <td>Resolve OA system temps when HX is in OA equipment list</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5339">5339</a></td>
+  <td>Removed SecZoneAirNodeNum so no need to register that node.</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5340">5340</a></td>
+  <td>Header for EnergyPlus to FMU</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5342">5342</a></td>
+  <td>Improve warning message when coil heating water sizes to zero</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5345">5345</a></td>
+  <td>More robust check for subsurface facing angle vs base surface</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5348">5348</a></td>
+  <td>EMS negative number corrections</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5350">5350</a></td>
+  <td>Missing commas in write statements fixed</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5352">5352</a></td>
+  <td>Various documentation and IDD updates</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5358">5358</a></td>
+  <td>Perturb SHR if bypass factor calculation appears to fail</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5361">5361</a></td>
+  <td>109806134 abs chlr blank water flow</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5367">5367</a></td>
+  <td>#5252 Tin Discrepancy New VRF Model</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5371">5371</a></td>
+  <td>Using correct executable name in shell script</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5378">5378</a></td>
+  <td>Fix floating point initialization issue in VRF residual function</td>
+ </tr>
+</table>
+<h2>Under the Hood Restructuring</h2>
+<table border="1" >
+ <tr>
+  <th>PR #</th>
+  <th>Description</th>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/4911">4911</a></td>
+  <td>ObjexxFCL: Array iterators added, Vector2/3 APIs refined</td>
+ </tr>
+ <tr>
+  <td><a href="https://github.com/NREL/EnergyPlus/pull/5056">5056</a></td>
+  <td>Member array usage reduced</td>
+ </tr>
+</table>
+</body>
+</html>

@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # coding=utf8
 
-import os
 import logging
 import subprocess
 
@@ -17,7 +16,10 @@ eplus_logger.handlers = []
 eplus_logger.addHandler(logging.NullHandler())
 
 
-def log_subprocess_output(pipe):
+EPLUS_DIRECTORY = None
+
+
+def _log_subprocess_output(pipe):
     for line in iter(pipe.readline, b''):  # b'\n'-separated lines
         eplus_logger.info(line.decode().strip('\n'))
 
@@ -30,11 +32,18 @@ def _assert_files(idf_file, weather_file, working_dir,
     mandatory files or directory are missing.
     """
 
-    if idd_file is not None:
-        idd_file = Path(idd_file)
-        logger.debug('looking for idd file (%s)' % idd_file.abspath())
-        if not idd_file.isfile():
-            raise IOError("IDD file not found")
+    def get_idd(eplus_directory, idd_file):
+        if not idd_file and eplus_directory:
+            return Path(eplus_directory) / "Energy+.idd"
+        if not idd_file:
+            return Path("Energy+.idd")
+        return Path(idd_file)
+
+    idd_file = get_idd(EPLUS_DIRECTORY, idd_file)
+    logger.debug('looking for idd file (%s)' % idd_file.abspath())
+
+    if not idd_file.isfile():
+        raise IOError("IDD file not found")
 
     working_dir = Path(working_dir)
     logger.debug(
@@ -43,13 +52,12 @@ def _assert_files(idf_file, weather_file, working_dir,
     if not working_dir.isdir():
         raise IOError("Working directory does not exist")
 
-    if out_dir is not None:
-        out_dir = Path(out_dir)
-        logger.debug(
-            'checking if output directory (%s) exist' %
-            out_dir.abspath())
-        if not out_dir.isdir():
-            raise IOError("Output directory does not exist")
+    out_dir = Path(out_dir)
+    logger.debug(
+        'checking if output directory (%s) exist' %
+        out_dir.abspath())
+    if not out_dir.isdir():
+        raise IOError("Output directory does not exist")
 
     weather_file = Path(weather_file)
     logger.debug('looking for weather file (%s)' % weather_file.abspath())
@@ -64,76 +72,44 @@ def _assert_files(idf_file, weather_file, working_dir,
     return idf_file, weather_file, working_dir, idd_file, out_dir
 
 
-def exec_command_line(tmp, idd_file, idf_file, weather_file,
-                      prefix, docker_tag, keep_data_err, out_dir):
+def _exec_command_line(tmp, idd_file, idf_file, weather_file,
+                       prefix, bin_path, keep_data_err, out_dir):
     """Build the command line used in subprocess.Popen
 
-    Construct the command line passed as argument to subprocess.Popen depending
-    docker or local e+ installation is used.
+    Construct the command line passed as argument to subprocess.Popen
     """
-    if (docker_tag != '') and (docker_tag is not None):
-        control_name = "docker_%i" % os.getpid()
-        command = (['docker', 'run', '--rm', '--name', control_name,
-                    '-v', '%s:/var/simdata/' % tmp,
-                    'celliern/energy_plus:%s' % docker_tag,
-                    'EnergyPlus',
-                    "-w", "/var/simdata/%s" % weather_file.basename(),
-                    "-p", prefix,
-                    "-d", "/var/simdata/"] +
-                   (["-i", "/var/simdata/%s" % idd_file.basename()]
-                    if idd_file is not None else []) +
-                   ["-s", "d",
-                    "-r",
-                    "/var/simdata/%s" % idf_file.basename()])
-        logger.debug('command line : %s' % ' '.join(command))
 
-        logger.info('starting energy plus simulation...')
-        process = subprocess.Popen(
-            command,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT)
-        with process.stdout:
-            log_subprocess_output(process.stdout)
-        if process.wait() != 0:
-            if keep_data_err:
-                failed_dir = out_dir / "failed"
-                failed_dir.mkdir_p()
-                tmp.copytree(failed_dir / tmp.basename())
-            for action in ('kill', 'rm'):
-                kill_process = subprocess.Popen(['docker', action, 'ctr_name'],
-                                                stdout=subprocess.PIPE,
-                                                stderr=subprocess.PIPE)
-                if kill_process.wait() != 0:
-                    raise RuntimeError(kill_process.stderr.read())
-            tmp.rmtree_p()
-            raise RuntimeError("System call failure")
+    def get_bin_path(eplus_directory, bin_path):
+        if not bin_path and eplus_directory:
+            return Path(eplus_directory) / 'EnergyPlus'
+        if not bin_path:
+            return 'EnergyPlus'
+        return bin_path
 
-    else:
-        command = (['EnergyPlus',
-                    "-w", tmp / weather_file.basename(),
-                    "-p", prefix,
-                    "-d", tmp.abspath()] +
-                   (["-i", tmp / idd_file.basename()]
-                    if idd_file is not None else []) +
-                   ["-s", "d",
-                    "-r",
-                    tmp / idf_file.basename()])
-        logger.debug('command line : %s' % ' '.join(command))
+    command = ([get_bin_path(EPLUS_DIRECTORY, bin_path),
+                "-w", tmp / weather_file.basename(),
+                "-p", prefix,
+                "-d", tmp.abspath(),
+                "-i", (tmp / idd_file.basename())] +
+               ["-s", "d",
+                "-r",
+                tmp / idf_file.basename()])
+    logger.debug('command line : %s' % ' '.join(command))
 
-        logger.info('starting energy plus simulation...')
-        process = subprocess.Popen(
-            command,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT)
-        with process.stdout:
-            log_subprocess_output(process.stdout)
-        if process.wait() != 0:
-            if keep_data_err:
-                failed_dir = out_dir / "failed"
-                failed_dir.mkdir_p()
-                tmp.copytree(failed_dir / tmp.basename())
-            tmp.rmtree_p()
-            raise RuntimeError("System call failure")
+    logger.info('starting energy plus simulation...')
+    process = subprocess.Popen(
+        command,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT)
+    with process.stdout:
+        _log_subprocess_output(process.stdout)
+    if process.wait() != 0:
+        if keep_data_err:
+            failed_dir = out_dir / "failed"
+            failed_dir.mkdir_p()
+            tmp.copytree(failed_dir / tmp.basename())
+        tmp.rmtree_p()
+        raise RuntimeError("System call failure")
     logger.info('energy plus simulation ended')
 
 
@@ -144,7 +120,7 @@ def run(idf_file, weather_file,
         out_dir='/tmp/',
         keep_data=False,
         keep_data_err=True,
-        docker_tag='latest'):
+        bin_path=None):
     """
     energyplus runner using docker image (by default) or local installation.
 
@@ -196,14 +172,13 @@ def run(idf_file, weather_file,
     with tempdir(prefix='eplus_run_', dir=out_dir) as tmp:
         logger.debug('tempory dir (%s) created' % tmp)
 
-        if idd_file is not None:
-            idd_file.copy(tmp)
+        idd_file.copy(tmp)
         weather_file.copy(tmp)
         idf_file.copy(tmp)
 
-        exec_command_line(tmp, idd_file, idf_file,
-                          weather_file, prefix, docker_tag,
-                          keep_data_err, out_dir)
+        _exec_command_line(tmp, idd_file, idf_file,
+                           weather_file, prefix, bin_path,
+                           keep_data_err, out_dir)
 
         logger.debug(
             'files generated at the end of the simulation: %s' %
@@ -228,5 +203,4 @@ def run(idf_file, weather_file,
             return result_dataframes.pop()
         if keep_data:
             tmp.copytree(working_dir / tmp.basename())
-        tmp.rmtree_p()
         return result_dataframes
