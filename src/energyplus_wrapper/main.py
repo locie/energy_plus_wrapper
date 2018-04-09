@@ -92,7 +92,7 @@ def _exec_command_line(tmp, idd_file, idf_file, weather_file,
                 "-d", tmp.abspath(),
                 "-i", (tmp / idd_file.basename())] +
                ["-s", "d",
-                "-r",
+                "-r", "-x",
                 tmp / idf_file.basename()])
     logger.debug('command line : %s' % ' '.join(command))
 
@@ -117,7 +117,7 @@ def run(idf_file, weather_file,
         working_dir=".",
         idd_file=None,
         prefix="eplus",
-        out_dir='/tmp/',
+        out_dir=None,
         keep_data=False,
         keep_data_err=True,
         bin_path=None):
@@ -145,7 +145,7 @@ def run(idf_file, weather_file,
     prefix : str, optional
         prefix of output files (default: "eplus")
     out_dir : str, optional
-        Output directory (default: "/tmp")
+        Output directory (default: None, OS default temp folder).
     keep_data : bool, optional
         if True, do not remove the temporary folder after the simulation
         (default: False)

@@ -5,7 +5,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 README = open(os.path.join(here, 'README.rst')).read()
 
 
-version = '0.5.0'
+version = '0.5.1'
 
 install_requires = ["pandas", "path.py"]
 
@@ -23,7 +23,7 @@ setup(name='energyplus_wrapper',
       author_email='contact@nicolas-cellier.net',
       url='https://github.com/celliern/energy_plus_wrapper/',
       license='DO WHAT THE FUCK YOU WANT TO',
-      download_url='https://github.com/locie/energy_plus_wrapper/archive/v0.5.0.tar.gz',  # noqa: URL
+      download_url='https://github.com/locie/energy_plus_wrapper/archive/v0.5.1.tar.gz',  # noqa: URL
       packages=find_packages('src'),
       package_dir={'': 'src'}, include_package_data=True,
       zip_safe=False,
