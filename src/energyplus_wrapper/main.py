@@ -4,6 +4,7 @@
 import os
 import logging
 import subprocess
+import tempfile
 
 import pandas as pd
 from path import Path, tempdir
@@ -85,7 +86,7 @@ def _exec_command_line(tmp, idd_file, idf_file, weather_file,
             return 'EnergyPlus'
         return bin_path
 
-    command = ([get_bin_path(os.environ.get('EPLUS_DIR', None),
+    command = ([get_bin_path(os.environ.get('EPLUS_DIR',    None),
                              bin_path),
                 "-w", tmp / weather_file.basename(),
                 "-p", prefix,
@@ -117,7 +118,7 @@ def run(idf_file, weather_file,
         working_dir=".",
         idd_file=None,
         prefix="eplus",
-        out_dir=None,
+        out_dir=tempfile.gettempdir(),
         keep_data=False,
         keep_data_err=True,
         bin_path=None):
@@ -145,7 +146,7 @@ def run(idf_file, weather_file,
     prefix : str, optional
         prefix of output files (default: "eplus")
     out_dir : str, optional
-        Output directory (default: None, OS default temp folder).
+        Output directory (default: OS default temp folder).
     keep_data : bool, optional
         if True, do not remove the temporary folder after the simulation
         (default: False)
@@ -171,7 +172,7 @@ def run(idf_file, weather_file,
     idf_file, weather_file, working_dir, idd_file, out_dir = \
         _assert_files(idf_file, weather_file, working_dir, idd_file, out_dir)
     with tempdir(prefix='eplus_run_', dir=out_dir) as tmp:
-        logger.debug('tempory dir (%s) created' % tmp)
+        logger.debug('temporary dir (%s) created' % tmp)
 
         idd_file.copy(tmp)
         weather_file.copy(tmp)
