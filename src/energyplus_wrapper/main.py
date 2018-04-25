@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 # coding=utf8
 
-import os
+import contextlib
 import logging
+import os
 import subprocess
 import tempfile
 
@@ -16,6 +17,20 @@ logger.addHandler(logging.NullHandler())
 eplus_logger = logging.getLogger('.'.join([__name__, 'e+_log']))
 eplus_logger.handlers = []
 eplus_logger.addHandler(logging.NullHandler())
+
+
+@contextlib.contextmanager
+def working_directory(path):
+    """A context manager which changes the working directory to the given
+    path, and then changes it back to its previous value on exit.
+
+    """
+    prev_cwd = os.getcwd()
+    os.chdir(path)
+    try:
+        yield
+    finally:
+        os.chdir(prev_cwd)
 
 
 def _log_subprocess_output(pipe):
@@ -85,33 +100,32 @@ def _exec_command_line(tmp, idd_file, idf_file, weather_file,
         if not bin_path:
             return 'EnergyPlus'
         return bin_path
+    with working_directory(tmp.abspath()):
+        command = ([get_bin_path(os.environ.get('EPLUS_DIR', None),
+                                 bin_path),
+                    "-w", weather_file.basename(),
+                    "-p", prefix,
+                    "-i", idd_file.basename()] +
+                   ["-s", "d",
+                    "-r", "-x",
+                    idf_file.basename()])
+        logger.debug('command line : %s' % ' '.join(command))
 
-    command = ([get_bin_path(os.environ.get('EPLUS_DIR',    None),
-                             bin_path),
-                "-w", tmp / weather_file.basename(),
-                "-p", prefix,
-                "-d", tmp.abspath(),
-                "-i", (tmp / idd_file.basename())] +
-               ["-s", "d",
-                "-r", "-x",
-                tmp / idf_file.basename()])
-    logger.debug('command line : %s' % ' '.join(command))
-
-    logger.info('starting energy plus simulation...')
-    process = subprocess.Popen(
-        command,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT)
-    with process.stdout:
-        _log_subprocess_output(process.stdout)
-    if process.wait() != 0:
-        if keep_data_err:
-            failed_dir = out_dir / "failed"
-            failed_dir.mkdir_p()
-            tmp.copytree(failed_dir / tmp.basename())
-        tmp.rmtree_p()
-        raise RuntimeError("System call failure")
-    logger.info('energy plus simulation ended')
+        logger.info('starting energy plus simulation...')
+        process = subprocess.Popen(
+            command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT)
+        with process.stdout:
+            _log_subprocess_output(process.stdout)
+        if process.wait() != 0:
+            if keep_data_err:
+                failed_dir = out_dir / "failed"
+                failed_dir.mkdir_p()
+                tmp.copytree(failed_dir / tmp.basename())
+            tmp.rmtree_p()
+            raise RuntimeError("System call failure")
+        logger.info('energy plus simulation ended')
 
 
 def run(idf_file, weather_file,
@@ -178,6 +192,9 @@ def run(idf_file, weather_file,
         weather_file.copy(tmp)
         idf_file.copy(tmp)
 
+        if bin_path:
+            bin_path = Path(bin_path).abspath()
+
         _exec_command_line(tmp, idd_file, idf_file,
                            weather_file, prefix, bin_path,
                            keep_data_err, out_dir)
@@ -204,5 +221,5 @@ def run(idf_file, weather_file,
         if len(result_dataframes) == 1:
             return result_dataframes.pop()
         if keep_data:
-            tmp.copytree(working_dir / tmp.basename())
+            tmp.copytree(working_dir.abspath() / tmp.basename())
         return result_dataframes
