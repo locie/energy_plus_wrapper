@@ -19,6 +19,15 @@ def test_run(version):
         bin_path="tests/EnergyPlus-%s/energyplus" % version)
 
 
+@pytest.mark.parametrize("version",
+                         ["8-4-0",
+                          "8-7-0"])
+def test_run_eplus_path(version):
+    run('tests/in_%s.idf' % version,
+        'tests/in.epw',
+        eplus_path='tests/EnergyPlus-%s' % version)
+
+
 def run_mp(i, version):
     run('tests/in_%s.idf' % version,
         'tests/in.epw',
