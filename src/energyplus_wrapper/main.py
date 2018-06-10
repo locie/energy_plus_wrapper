@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # coding=utf8
 
-import contextlib
 import logging
 import os
 import subprocess
@@ -19,22 +18,11 @@ eplus_logger.handlers = []
 eplus_logger.addHandler(logging.NullHandler())
 
 
-@contextlib.contextmanager
-def working_directory(path):
-    """A context manager which changes the working directory to the given
-    path, and then changes it back to its previous value on exit.
-
-    """
-    prev_cwd = os.getcwd()
-    os.chdir(path)
-    try:
-        yield
-    finally:
-        os.chdir(prev_cwd)
+EPLUS_PATH = None
 
 
 def _log_subprocess_output(pipe):
-    for line in iter(pipe.readline, b''):  # b'\n'-separated lines
+    for line in iter(pipe.readline, b''):
         eplus_logger.info(line.decode().strip('\n'))
 
 
@@ -94,15 +82,8 @@ def _exec_command_line(tmp, idd_file, idf_file, weather_file,
     Construct the command line passed as argument to subprocess.Popen
     """
 
-    def get_bin_path(eplus_directory, bin_path):
-        if not bin_path and eplus_directory:
-            return Path(eplus_directory) / 'EnergyPlus'
-        if not bin_path:
-            return 'EnergyPlus'
-        return bin_path
-    with working_directory(tmp.abspath()):
-        command = ([get_bin_path(os.environ.get('EPLUS_DIR', None),
-                                 bin_path),
+    with tmp.abspath():
+        command = ([bin_path,
                     "-w", weather_file.basename(),
                     "-p", prefix,
                     "-i", idd_file.basename()] +
@@ -135,7 +116,8 @@ def run(idf_file, weather_file,
         out_dir=tempfile.gettempdir(),
         keep_data=False,
         keep_data_err=True,
-        bin_path=None):
+        bin_path=None,
+        eplus_path=None):
     """
     energyplus runner using local installation.
 
@@ -169,8 +151,11 @@ def run(idf_file, weather_file,
         simulation fail. (default: True)
     bin_path : None, optional
         if provided, path to the EnergyPlus binary. If not provided (default),
-        find it on $EPLUS_DIR / EnergyPlus (if $EPLUS_DIR set), or
+        find it on eplus_path / EnergyPlus (if eplus_path set), or
+        use the global variable EPLUS_PATH (id set), or finally
         consider that EnergyPlus is on the path
+    eplus_path : None, optional
+        if provided, path to the EnergyPlus.
 
 
     Returns
@@ -181,6 +166,21 @@ def run(idf_file, weather_file,
         if only one csv is generated (which seems to be the usual user
         case) or a list of DataFrames if many csv are generated.
     """
+
+    if EPLUS_PATH and not eplus_path:
+        eplus_path = EPLUS_PATH
+
+    if eplus_path:
+        eplus_path = Path(eplus_path)
+
+    if eplus_path and not bin_path:
+        bin_path = eplus_path / "energyplus"
+    if eplus_path and not idd_file:
+        idd_file = eplus_path / "Energy+.idd"
+    if not eplus_path and not bin_path:
+        bin_path = "EnergyPlus"
+    if not eplus_path and not idd_file:
+        idd_file = "Energy+.idd"
 
     logger.info('check consistency of input files')
     idf_file, weather_file, working_dir, idd_file, out_dir = \
