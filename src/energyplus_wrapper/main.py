@@ -109,6 +109,47 @@ def _exec_command_line(tmp, idd_file, idf_file, weather_file,
         logger.info('energy plus simulation ended')
 
 
+def _manage_output_files(files, working_dir, tmp):
+    result_dataframes = []
+    logger.debug(
+        'looking for csv output, return the csv files '
+        'in dataframes if any')
+    for file in files:
+        if "table" in file.basename():
+            file.copy(working_dir.abspath() / tmp.basename())
+            continue
+        logger.debug('try to store file %s in dataframe' % (file))
+        result_dataframes.append(
+            pd.read_csv(
+                file,
+                sep=',',
+                encoding='us-ascii'))
+        logger.debug('file %s stored' % (file))
+    if len(result_dataframes) == 0:
+        return
+    if len(result_dataframes) == 1:
+        return result_dataframes.pop()
+
+
+def _assert_eplus_path(eplus_path, bin_path, idd_file):
+
+    if EPLUS_PATH and not eplus_path:
+        eplus_path = EPLUS_PATH
+
+    if eplus_path:
+        eplus_path = Path(eplus_path)
+
+    if eplus_path and not bin_path:
+        bin_path = eplus_path / "energyplus"
+    if eplus_path and not idd_file:
+        idd_file = eplus_path / "Energy+.idd"
+    if not eplus_path and not bin_path:
+        bin_path = "EnergyPlus"
+    if not eplus_path and not idd_file:
+        idd_file = "Energy+.idd"
+    return eplus_path, bin_path, idd_file
+
+
 def run(idf_file, weather_file,
         working_dir=".",
         idd_file=None,
@@ -167,20 +208,8 @@ def run(idf_file, weather_file,
         case) or a list of DataFrames if many csv are generated.
     """
 
-    if EPLUS_PATH and not eplus_path:
-        eplus_path = EPLUS_PATH
-
-    if eplus_path:
-        eplus_path = Path(eplus_path)
-
-    if eplus_path and not bin_path:
-        bin_path = eplus_path / "energyplus"
-    if eplus_path and not idd_file:
-        idd_file = eplus_path / "Energy+.idd"
-    if not eplus_path and not bin_path:
-        bin_path = "EnergyPlus"
-    if not eplus_path and not idd_file:
-        idd_file = "Energy+.idd"
+    eplus_path, bin_path, idd_file = _assert_eplus_path(
+        eplus_path, bin_path, idd_file)
 
     logger.info('check consistency of input files')
     idf_file, weather_file, working_dir, idd_file, out_dir = \
@@ -204,22 +233,9 @@ def run(idf_file, weather_file,
             ' '.join(
                 tmp.files()))
 
-        result_dataframes = []
-        logger.debug(
-            'looking for csv output, return the csv files '
-            'in dataframes if any')
-        for file in tmp.files('*.csv'):
-            logger.debug('try to store file %s in dataframe' % (file))
-            result_dataframes.append(
-                pd.read_csv(
-                    file,
-                    sep=',',
-                    encoding='us-ascii'))
-            logger.debug('file %s stored' % (file))
-        if len(result_dataframes) == 0:
-            return
-        if len(result_dataframes) == 1:
-            return result_dataframes.pop()
+        result_dataframes = _manage_output_files(tmp.files('*.csv'),
+                                                 working_dir, tmp)
+
         if keep_data:
             tmp.copytree(working_dir.abspath() / tmp.basename())
         return result_dataframes
