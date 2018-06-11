@@ -35,13 +35,15 @@ API
 .. code:: python
 
     def run(idf_file, weather_file,
-        working_dir=".",
-        idd_file=None,
-        prefix="eplus",
-        out_dir='/tmp/',
-        keep_data=False,
-        keep_data_err=True,
-        bin_path=None):
+            working_dir=".",
+            idd_file=None,
+            simulname=None,
+            prefix="eplus",
+            out_dir=tempfile.gettempdir(),
+            keep_data=False,
+            keep_data_err=True,
+            bin_path=None,
+            eplus_path=None):
         """
         energyplus runner using local installation.
 
@@ -61,12 +63,17 @@ API
             working directory (default: ".")
         idd_file : None, optional
             base energy-plus file (default: None, find Energy+.idd in the
-            e+ install directory if EPLUS_DIRECTORY set, else find it on current
-            folder.)
+            e+ install directory if $EPLUS_DIR set, else find it on working
+            dir.)
+        simulname : str or None, optional (default None)
+            this name will be used for temp dir id and saved outputs.
+            If not provided, uuid.uuid1() is used. Be careful to avoid naming
+            collision : the run will alway be done in separated folders, but the
+            output files can overwrite each other if the simulname is the same.
         prefix : str, optional
             prefix of output files (default: "eplus")
         out_dir : str, optional
-            Output directory (default: "/tmp")
+            temporary output directory (default: OS default temp folder).
         keep_data : bool, optional
             if True, do not remove the temporary folder after the simulation
             (default: False)
@@ -75,8 +82,11 @@ API
             simulation fail. (default: True)
         bin_path : None, optional
             if provided, path to the EnergyPlus binary. If not provided (default),
-            find it on EPLUS_DIRECTORY / EnergyPlus (if EPLUS_DIRECTORY set), or
+            find it on eplus_path / EnergyPlus (if eplus_path set), or
+            use the global variable EPLUS_PATH (id set), or finally
             consider that EnergyPlus is on the path
+        eplus_path : None, optional
+            if provided, path to the EnergyPlus.
 
 
         Returns
