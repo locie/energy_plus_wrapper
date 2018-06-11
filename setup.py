@@ -18,13 +18,13 @@ setup(name='energyplus_wrapper',
           # Get strings from
           # http://pypi.python.org/pypi?%3Aaction=list_classifiers
       ],
-      keywords='energy-plus wrapper docker',
+      keywords='energy-plus wrapper',
       author='Nicolas Cellier',
       author_email='contact@nicolas-cellier.net',
       url='https://github.com/celliern/energy_plus_wrapper/',
       license='MIT',
-      packages=find_packages('energy_plus_wrapper'),
-      package_dir={'': 'energy_plus_wrapper'}, include_package_data=True,
+      packages=find_packages('energyplus_wrapper'),
+      package_dir={'': 'energyplus_wrapper'}, include_package_data=True,
       zip_safe=False,
       install_requires=install_requires
       )
