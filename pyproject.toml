@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "energy_plus_wrapper"
-version = "0.6"
+version = "0.6.0"
 description = "some usefull function to run e+ locally"
 authors = ["Nicolas Cellier <contact@nicolas-cellier.net>"]
 license = "MIT"
