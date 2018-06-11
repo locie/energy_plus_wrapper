@@ -117,8 +117,9 @@ def _manage_output_files(files, working_dir, simulname):
         'in dataframes if any')
     for file in files:
         if "table" in file.basename():
-            (working_dir.abspath() / "tables").makedirs_p()
-            file.copy(working_dir.abspath() / "tables" /
+            tables_out = (working_dir.abspath() / "tables")
+            tables_out.makedirs_p()
+            file.copy(tables_out /
                       "%s_%s.csv" % (file.basename().stripext(), simulname))
             continue
         logger.debug('try to store file %s in dataframe' % (file))
@@ -247,7 +248,7 @@ def run(idf_file, weather_file,
                 tmp.files()))
 
         result_dataframes = _manage_output_files(tmp.files('*.csv'),
-                                                 working_dir, tmp)
+                                                 working_dir, simulname)
 
         if keep_data:
             tmp.copytree(working_dir.abspath() / "output_data" / simulname)
