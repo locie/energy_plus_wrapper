@@ -1,3 +1,4 @@
-# Example package with a console entry point
+#!/usr/bin/env python
+# coding=utf-8
 
-from energyplus_wrapper.main import run
+from .main import run
