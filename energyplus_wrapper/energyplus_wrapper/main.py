@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 logger.handlers = []
 logger.addHandler(logging.NullHandler())
 
-eplus_logger = logging.getLogger('.'.join([__name__, 'e+_log']))
+eplus_logger = logging.getLogger(".".join([__name__, "e+_log"]))
 eplus_logger.handlers = []
 eplus_logger.addHandler(logging.NullHandler())
 
@@ -23,12 +23,11 @@ EPLUS_PATH = None
 
 
 def _log_subprocess_output(pipe):
-    for line in iter(pipe.readline, b''):
-        eplus_logger.info(line.decode().strip('\n'))
+    for line in iter(pipe.readline, b""):
+        eplus_logger.info(line.decode().strip("\n"))
 
 
-def _assert_files(idf_file, weather_file, working_dir,
-                  idd_file, out_dir):
+def _assert_files(idf_file, weather_file, working_dir, idd_file, out_dir):
     """Ensure the files and directory are here and convert them as path.Path
 
     This function will coerce the string as a path.py Path and assert if
@@ -42,62 +41,67 @@ def _assert_files(idf_file, weather_file, working_dir,
             return Path("Energy+.idd")
         return Path(idd_file)
 
-    idd_file = get_idd(os.environ.get('EPLUS_DIR', None),
-                       idd_file)
-    logger.debug('looking for idd file (%s)' % idd_file.abspath())
+    idd_file = get_idd(os.environ.get("EPLUS_DIR", None), idd_file)
+    logger.debug("looking for idd file (%s)" % idd_file.abspath())
 
     if not idd_file.isfile():
         raise IOError("IDD file not found")
 
     working_dir = Path(working_dir)
-    logger.debug(
-        'checking if working directory (%s) exist' %
-        working_dir.abspath())
+    logger.debug("checking if working directory (%s) exist" % working_dir.abspath())
     if not working_dir.isdir():
         raise IOError("Working directory does not exist")
 
     out_dir = Path(out_dir)
-    logger.debug(
-        'checking if output directory (%s) exist' %
-        out_dir.abspath())
+    logger.debug("checking if output directory (%s) exist" % out_dir.abspath())
     if not out_dir.isdir():
         raise IOError("Output directory does not exist")
 
     weather_file = Path(weather_file)
-    logger.debug('looking for weather file (%s)' % weather_file.abspath())
+    logger.debug("looking for weather file (%s)" % weather_file.abspath())
     if not weather_file.isfile():
         raise IOError("Weather file not found")
 
     idf_file = Path(idf_file)
-    logger.debug('looking for idf file (%s)' % idf_file.abspath())
+    logger.debug("looking for idf file (%s)" % idf_file.abspath())
     if not idf_file.isfile():
         raise IOError("IDF file not found")
 
     return idf_file, weather_file, working_dir, idd_file, out_dir
 
 
-def _exec_command_line(tmp, idd_file, idf_file, weather_file, simulname,
-                       prefix, bin_path, keep_data_err, out_dir):
+def _exec_command_line(
+    tmp,
+    idd_file,
+    idf_file,
+    weather_file,
+    simulname,
+    prefix,
+    bin_path,
+    keep_data_err,
+    out_dir,
+):
     """Build the command line used in subprocess.Popen
 
     Construct the command line passed as argument to subprocess.Popen
     """
 
     with tmp.abspath():
-        command = ([bin_path,
-                    "-w", weather_file.basename(),
-                    "-p", prefix,
-                    "-i", idd_file.basename()] +
-                   ["-s", "d",
-                    "-r", "-x",
-                    idf_file.basename()])
-        logger.debug('command line : %s' % ' '.join(command))
+        command = [
+            bin_path,
+            "-w",
+            weather_file.basename(),
+            "-p",
+            prefix,
+            "-i",
+            idd_file.basename(),
+        ] + ["-s", "d", "-r", "-x", idf_file.basename()]
+        logger.debug("command line : %s" % " ".join(command))
 
-        logger.info('starting energy plus simulation...')
+        logger.info("starting energy plus simulation...")
         process = subprocess.Popen(
-            command,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT)
+            command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+        )
         with process.stdout:
             _log_subprocess_output(process.stdout)
         if process.wait() != 0:
@@ -107,32 +111,31 @@ def _exec_command_line(tmp, idd_file, idf_file, weather_file, simulname,
                 tmp.copytree(failed_dir / simulname)
             tmp.rmtree_p()
             raise RuntimeError("System call failure")
-        logger.info('energy plus simulation ended')
+        logger.info("energy plus simulation ended")
 
 
 def _manage_output_files(files, working_dir, simulname):
     result_dataframes = []
-    logger.debug(
-        'looking for csv output, return the csv files '
-        'in dataframes if any')
+    logger.debug("looking for csv output, return the csv files " "in dataframes if any")
     for file in files:
         if "table" in file.basename():
-            tables_out = (working_dir.abspath() / "tables")
+            tables_out = working_dir.abspath() / "tables"
             tables_out.makedirs_p()
-            file.copy(tables_out /
-                      "%s_%s.csv" % (file.basename().stripext(), simulname))
+            file.copy(
+                tables_out / "%s_%s.csv" % (file.basename().stripext(), simulname)
+            )
             continue
-        logger.debug('try to store file %s in dataframe' % (file))
-        result_dataframes.append(
-            pd.read_csv(
-                file,
-                sep=',',
-                encoding='us-ascii'))
-        logger.debug('file %s stored' % (file))
+        logger.debug("try to store file %s in dataframe" % (file))
+        result_dataframes.append(pd.read_csv(file, sep=",", encoding="us-ascii"))
+        logger.debug("file %s stored" % (file))
     if len(result_dataframes) == 0:
         return
     if len(result_dataframes) == 1:
         return result_dataframes.pop()
+    return {
+        "%s_%s" % (file.basename().stripext(), simulname): result_dataframe
+        for file, df in zip(files, result_dataframes)
+    }
 
 
 def _assert_eplus_path(eplus_path, bin_path, idd_file):
@@ -154,16 +157,19 @@ def _assert_eplus_path(eplus_path, bin_path, idd_file):
     return eplus_path, bin_path, idd_file
 
 
-def run(idf_file, weather_file,
-        working_dir=".",
-        idd_file=None,
-        simulname=None,
-        prefix="eplus",
-        out_dir=tempfile.gettempdir(),
-        keep_data=False,
-        keep_data_err=True,
-        bin_path=None,
-        eplus_path=None):
+def run(
+    idf_file,
+    weather_file,
+    working_dir=".",
+    idd_file=None,
+    simulname=None,
+    prefix="eplus",
+    out_dir=tempfile.gettempdir(),
+    keep_data=False,
+    keep_data_err=True,
+    bin_path=None,
+    eplus_path=None,
+):
     """
     energyplus runner using local installation.
 
@@ -218,17 +224,17 @@ def run(idf_file, weather_file,
         case) or a list of DataFrames if many csv are generated.
     """
 
-    eplus_path, bin_path, idd_file = _assert_eplus_path(
-        eplus_path, bin_path, idd_file)
+    eplus_path, bin_path, idd_file = _assert_eplus_path(eplus_path, bin_path, idd_file)
 
     if not simulname:
         simulname = str(uuid.uuid1())
 
-    logger.info('check consistency of input files')
-    idf_file, weather_file, working_dir, idd_file, out_dir = \
-        _assert_files(idf_file, weather_file, working_dir, idd_file, out_dir)
-    with tempdir(prefix='eplus_run_', suffix=simulname, dir=out_dir) as tmp:
-        logger.debug('temporary dir (%s) created' % tmp)
+    logger.info("check consistency of input files")
+    idf_file, weather_file, working_dir, idd_file, out_dir = _assert_files(
+        idf_file, weather_file, working_dir, idd_file, out_dir
+    )
+    with tempdir(prefix="eplus_run_", suffix=simulname, dir=out_dir) as tmp:
+        logger.debug("temporary dir (%s) created" % tmp)
 
         idd_file.copy(tmp)
         weather_file.copy(tmp)
@@ -237,18 +243,25 @@ def run(idf_file, weather_file,
         if bin_path:
             bin_path = Path(bin_path).abspath()
 
-        _exec_command_line(tmp, idd_file, idf_file,
-                           weather_file, simulname,
-                           prefix, bin_path,
-                           keep_data_err, out_dir)
+        _exec_command_line(
+            tmp,
+            idd_file,
+            idf_file,
+            weather_file,
+            simulname,
+            prefix,
+            bin_path,
+            keep_data_err,
+            out_dir,
+        )
 
         logger.debug(
-            'files generated at the end of the simulation: %s' %
-            ' '.join(
-                tmp.files()))
+            "files generated at the end of the simulation: %s" % " ".join(tmp.files())
+        )
 
-        result_dataframes = _manage_output_files(tmp.files('*.csv'),
-                                                 working_dir, simulname)
+        result_dataframes = _manage_output_files(
+            tmp.files("*.csv"), working_dir, simulname
+        )
 
         if keep_data:
             tmp.copytree(working_dir.abspath() / "output_data" / simulname)
