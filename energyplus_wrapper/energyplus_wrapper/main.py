@@ -174,14 +174,14 @@ def run(
 
     Run an energy-plus simulation with the model file (a .idf file),
     a weather file (should be a .epw) as required arguments. The output will be
-    a pandas dataframe or a list of dataframe or None, depending of how many
+    a pandas dataframe or a dict of dataframe or None, depending of how many
     csv has been generated during the simulation, and requested in the model
     file. The run is multiprocessing_safe
 
     Parameters
     ----------
-    idf_file : str, or eppy.modeleditor.IDF
-        the file describing the model (.idf), or a eppy IDF instance.
+    idf_file : str
+        the file describing the model (.idf).
     weather_file : str
         the file describing the weather data (.epw)
     working_dir : str, optional
@@ -216,11 +216,11 @@ def run(
 
     Returns
     -------
-    pandas.DataFrame or list of pandas.DataFrame or None
+    pandas.DataFrame or dict of pandas.DataFrame or None
         Only the csv outputs are handled : the output of the
         function will be None if any csv are generated, a pandas DataFrame
         if only one csv is generated (which seems to be the usual user
-        case) or a list of DataFrames if many csv are generated.
+        case) or a dict of filename: DataFrames if many csv are generated.
     """
 
     eplus_path, bin_path, idd_file = _assert_eplus_path(eplus_path, bin_path, idd_file)
@@ -280,6 +280,59 @@ def run_from_str(
     bin_path=None,
     eplus_path=None,
 ):
+    """
+    energyplus runner using local installation.
+
+    Run an energy-plus simulation with the model file (idf) as string,
+    a weather file (should be a .epw) as required arguments. The output will be
+    a pandas dataframe or a dict of dataframe or None, depending of how many
+    csv has been generated during the simulation, and requested in the model
+    file. The run is multiprocessing_safe
+
+    Parameters
+    ----------
+    idf_file : str
+        the file describing the model (.idf).
+    weather_file : str
+        the file describing the weather data (.epw)
+    working_dir : str, optional
+        working directory (default: ".")
+    idd_file : None, optional
+        base energy-plus file (default: None, find Energy+.idd in the
+        e+ install directory if $EPLUS_DIR set, else find it on working
+        dir.)
+    simulname : str or None, optional (default None)
+        this name will be used for temp dir id and saved outputs.
+        If not provided, uuid.uuid1() is used. Be careful to avoid naming
+        collision : the run will alway be done in separated folders, but the
+        output files can overwrite each other if the simulname is the same.
+    prefix : str, optional
+        prefix of output files (default: "eplus")
+    out_dir : str, optional
+        temporary output directory (default: OS default temp folder).
+    keep_data : bool, optional
+        if True, do not remove the temporary folder after the simulation
+        (default: False)
+    keep_data_err : bool, optional
+        if True, copy the temporary folder on out_dir / "failed" if the
+        simulation fail. (default: True)
+    bin_path : None, optional
+        if provided, path to the EnergyPlus binary. If not provided (default),
+        find it on eplus_path / EnergyPlus (if eplus_path set), or
+        use the global variable EPLUS_PATH (id set), or finally
+        consider that EnergyPlus is on the path
+    eplus_path : None, optional
+        if provided, path to the EnergyPlus.
+
+
+    Returns
+    -------
+    pandas.DataFrame or list of pandas.DataFrame or None
+        Only the csv outputs are handled : the output of the
+        function will be None if any csv are generated, a pandas DataFrame
+        if only one csv is generated (which seems to be the usual user
+        case) or a list of DataFrames if many csv are generated.
+    """
     with tempdir() as tmp:
         with open(tmp / "eppy_idf.idf", "w") as idf_file:
             idf_file.write(idf_str)
@@ -311,6 +364,59 @@ def run_from_eppy(
     bin_path=None,
     eplus_path=None,
 ):
+    """
+    energyplus runner using local installation.
+
+    Run an energy-plus simulation with the eppy.modeleditor.IDF describing the
+    eplus model, a weather file (should be a .epw) as required arguments. The
+    output will be a pandas dataframe or a dict of dataframe or None, depending
+    of how many csv has been generated during the simulation, and requested in
+    the model file. The run is multiprocessing_safe.
+
+    Parameters
+    ----------
+    idf_file : str
+        the file describing the model (.idf).
+    weather_file : str
+        the file describing the weather data (.epw)
+    working_dir : str, optional
+        working directory (default: ".")
+    idd_file : None, optional
+        base energy-plus file (default: None, find Energy+.idd in the
+        e+ install directory if $EPLUS_DIR set, else find it on working
+        dir.)
+    simulname : str or None, optional (default None)
+        this name will be used for temp dir id and saved outputs.
+        If not provided, uuid.uuid1() is used. Be careful to avoid naming
+        collision : the run will alway be done in separated folders, but the
+        output files can overwrite each other if the simulname is the same.
+    prefix : str, optional
+        prefix of output files (default: "eplus")
+    out_dir : str, optional
+        temporary output directory (default: OS default temp folder).
+    keep_data : bool, optional
+        if True, do not remove the temporary folder after the simulation
+        (default: False)
+    keep_data_err : bool, optional
+        if True, copy the temporary folder on out_dir / "failed" if the
+        simulation fail. (default: True)
+    bin_path : None, optional
+        if provided, path to the EnergyPlus binary. If not provided (default),
+        find it on eplus_path / EnergyPlus (if eplus_path set), or
+        use the global variable EPLUS_PATH (id set), or finally
+        consider that EnergyPlus is on the path
+    eplus_path : None, optional
+        if provided, path to the EnergyPlus.
+
+
+    Returns
+    -------
+    pandas.DataFrame or list of pandas.DataFrame or None
+        Only the csv outputs are handled : the output of the
+        function will be None if any csv are generated, a pandas DataFrame
+        if only one csv is generated (which seems to be the usual user
+        case) or a list of DataFrames if many csv are generated.
+    """
     idf_str = eppy_idf.idfstr()
     return run_from_str(
         idf_str,

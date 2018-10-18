@@ -32,6 +32,11 @@ very simple use:
 API
 ===
 
+The main function take the idf file as input. Two secondary function provide
+a launch from the model content as string `run_from_str`, and as eppy IDF
+`run_from_eppy`. These three function share the same signature, excepted the
+first one.
+
 .. code:: python
 
     def run(idf_file, weather_file,
