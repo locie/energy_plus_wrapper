@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# coding=utf8
+# coding=utf-8
 
 import logging
 import os
@@ -8,7 +8,7 @@ import tempfile
 import uuid
 
 import pandas as pd
-from path import Path, tempdir
+from path import Path, tempdir, tempfile
 
 logger = logging.getLogger(__name__)
 logger.handlers = []
@@ -27,7 +27,7 @@ def _log_subprocess_output(pipe):
         eplus_logger.info(line.decode().strip("\n"))
 
 
-def _assert_files(idf_file, weather_file, working_dir, idd_file, out_dir):
+def _assert_files(idf_file, weather_file, working_dir, idd_file, out_dir, eplus_dir):
     """Ensure the files and directory are here and convert them as path.Path
 
     This function will coerce the string as a path.py Path and assert if
@@ -41,7 +41,7 @@ def _assert_files(idf_file, weather_file, working_dir, idd_file, out_dir):
             return Path("Energy+.idd")
         return Path(idd_file)
 
-    idd_file = get_idd(os.environ.get("EPLUS_DIR", None), idd_file)
+    idd_file = get_idd(eplus_dir, idd_file)
     logger.debug("looking for idd file (%s)" % idd_file.abspath())
 
     if not idd_file.isfile():
@@ -181,8 +181,8 @@ def run(
 
     Parameters
     ----------
-    idf_file : str
-        the file describing the model (.idf)
+    idf_file : str, or eppy.modeleditor.IDF
+        the file describing the model (.idf), or a eppy IDF instance.
     weather_file : str
         the file describing the weather data (.epw)
     working_dir : str, optional
@@ -231,7 +231,7 @@ def run(
 
     logger.info("check consistency of input files")
     idf_file, weather_file, working_dir, idd_file, out_dir = _assert_files(
-        idf_file, weather_file, working_dir, idd_file, out_dir
+        idf_file, weather_file, working_dir, idd_file, out_dir, eplus_path
     )
     with tempdir(prefix="eplus_run_", suffix=simulname, dir=out_dir) as tmp:
         logger.debug("temporary dir (%s) created" % tmp)
@@ -266,3 +266,63 @@ def run(
         if keep_data:
             tmp.copytree(working_dir.abspath() / "output_data" / simulname)
         return result_dataframes
+
+
+def run_from_str(
+    idf_str,
+    weather_file,
+    working_dir=".",
+    idd_file=None,
+    simulname=None,
+    prefix="eplus",
+    out_dir=tempfile.gettempdir(),
+    keep_data=False,
+    keep_data_err=True,
+    bin_path=None,
+    eplus_path=None,
+):
+    with tempfile.TemporaryFile() as idf_file:
+        idf_file.write(idf_str)
+        idf_file.flush()
+        return run(
+            idf_file,
+            weather_file,
+            working_dir,
+            idd_file,
+            simulname,
+            prefix,
+            out_dir,
+            keep_data,
+            keep_data_err,
+            bin_path,
+            eplus_path,
+        )
+
+
+def run_from_eppy(
+    eppy_idf,
+    weather_file,
+    working_dir=".",
+    idd_file=None,
+    simulname=None,
+    prefix="eplus",
+    out_dir=tempfile.gettempdir(),
+    keep_data=False,
+    keep_data_err=True,
+    bin_path=None,
+    eplus_path=None,
+):
+    idf_str = eppy_idf.idfstr()
+    return run_from_str(
+        idf_str,
+        weather_file,
+        working_dir,
+        idd_file,
+        simulname,
+        prefix,
+        out_dir,
+        keep_data,
+        keep_data_err,
+        bin_path,
+        eplus_path,
+    )
