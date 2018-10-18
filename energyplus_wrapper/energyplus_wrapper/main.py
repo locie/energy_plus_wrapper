@@ -133,7 +133,7 @@ def _manage_output_files(files, working_dir, simulname):
     if len(result_dataframes) == 1:
         return result_dataframes.pop()
     return {
-        "%s_%s" % (file.basename().stripext(), simulname): result_dataframe
+        "%s_%s" % (file.basename().stripext(), simulname): df
         for file, df in zip(files, result_dataframes)
     }
 

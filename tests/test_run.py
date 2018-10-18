@@ -1,6 +1,22 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+You should download EPlus version 8.4, 8.5, 8.7 and put it into the tests/ folder
+in order to run these tests, so the tree looks like
+
+tests
+├── Energy+.idd
+├── EnergyPlus-8-4-0
+├── EnergyPlus-8-5-0
+├── EnergyPlus-8-7-0
+├── in_8-4-0.idf
+├── in_8-5-0.idf
+├── in_8-7-0.idf
+├── in.epw
+└── test_run.py
+"""
+
 import functools as ft
 import multiprocessing as mp
 
