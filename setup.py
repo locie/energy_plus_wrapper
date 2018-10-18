@@ -5,7 +5,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 README = open(os.path.join(here, 'README.rst')).read()
 
 
-version = '0.6.1'
+version = '0.7.0'
 
 install_requires = ["pandas", "path.py"]
 
