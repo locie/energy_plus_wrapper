@@ -2,13 +2,12 @@
 # coding=utf-8
 
 import logging
-import os
 import subprocess
 import tempfile
 import uuid
 
 import pandas as pd
-from path import Path, tempdir, tempfile
+from path import Path, tempdir
 
 logger = logging.getLogger(__name__)
 logger.handlers = []
@@ -133,7 +132,7 @@ def _manage_output_files(files, working_dir, simulname):
     if len(result_dataframes) == 1:
         return result_dataframes.pop()
     return {
-        "%s_%s" % (file.basename().stripext(), simulname): df
+        "%s" % file.basename().stripext(): df
         for file, df in zip(files, result_dataframes)
     }
 
@@ -281,11 +280,11 @@ def run_from_str(
     bin_path=None,
     eplus_path=None,
 ):
-    with tempfile.TemporaryFile() as idf_file:
-        idf_file.write(idf_str)
-        idf_file.flush()
+    with tempdir() as tmp:
+        with open(tmp / "eppy_idf.idf", "w") as idf_file:
+            idf_file.write(idf_str)
         return run(
-            idf_file,
+            tmp / "eppy_idf.idf",
             weather_file,
             working_dir,
             idd_file,
