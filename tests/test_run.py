@@ -25,42 +25,44 @@ import pytest
 from energyplus_wrapper import run
 
 
-@pytest.mark.parametrize("version",
-                         ["8-4-0",
-                          "8-7-0"])
+@pytest.mark.parametrize("version", ["8-4-0", "8-7-0"])
 def test_run(version):
-    run('tests/in_%s.idf' % version,
-        'tests/in.epw',
-        idd_file='tests/EnergyPlus-%s/Energy+.idd' % version,
-        bin_path="tests/EnergyPlus-%s/energyplus" % version)
+    return run(
+        "tests/in_%s.idf" % version,
+        "tests/in.epw",
+        idd_file="tests/EnergyPlus-%s/Energy+.idd" % version,
+        bin_path="tests/EnergyPlus-%s/energyplus" % version,
+    )
 
 
-@pytest.mark.parametrize("version",
-                         ["8-4-0",
-                          "8-7-0"])
+@pytest.mark.parametrize("version", ["8-4-0", "8-7-0"])
 def test_run_eplus_path(version):
-    run('tests/in_%s.idf' % version,
-        'tests/in.epw',
-        eplus_path='tests/EnergyPlus-%s' % version)
+    return run(
+        "tests/in_%s.idf" % version,
+        "tests/in.epw",
+        eplus_path="tests/EnergyPlus-%s" % version,
+    )
 
 
 def run_mp(i, version):
-    run('tests/in_%s.idf' % version,
-        'tests/in.epw',
-        idd_file='tests/EnergyPlus-%s/Energy+.idd' % version,
-        bin_path="tests/EnergyPlus-%s/energyplus" % version)
+    return run(
+        "tests/in_%s.idf" % version,
+        "tests/in.epw",
+        idd_file="tests/EnergyPlus-%s/Energy+.idd" % version,
+        bin_path="tests/EnergyPlus-%s/energyplus" % version,
+    )
 
 
-@pytest.mark.parametrize("version",
-                         ["8-4-0",
-                          "8-7-0"])
+@pytest.mark.parametrize("version", ["8-4-0", "8-7-0"])
 def test_run_mp(version):
     with mp.Pool() as p:
-        p.map(ft.partial(run_mp, version=version), range(8))
+        res = p.map(ft.partial(run_mp, version=version), range(8))
+    print(res)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import logging
+
     logger = logging.getLogger()
     logger.addHandler(logging.StreamHandler())
     logger.setLevel("DEBUG")

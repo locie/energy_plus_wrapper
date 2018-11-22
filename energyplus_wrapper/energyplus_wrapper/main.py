@@ -113,21 +113,25 @@ def _exec_command_line(
             raise RuntimeError("System call failure")
         logger.info("energy plus simulation ended")
 
-# , working_dir, simulname, custom_processes=None
+
 def _process_csv(file, working_dir, simulname):
-    results = []
-    logger.debug("looking for csv output, return the csv files " "in dataframes if any")
-    if "table" in file.basename():
-        tables_out = working_dir.abspath() / "tables"
-        tables_out.makedirs_p()
-        file.copy(
-            tables_out / "%s_%s.csv" % (file.basename().stripext(), simulname)
+    try:
+        logger.debug(
+            "looking for csv output, return the csv files " "in dataframes if any"
         )
-        return
-    logger.debug("try to store file %s in dataframe" % (file))
-    df = pd.read_csv(file, sep=",", encoding="us-ascii")
-    logger.debug("file %s stored" % (file))
-    return df
+        if "table" in file.basename():
+            tables_out = working_dir.abspath() / "tables"
+            tables_out.makedirs_p()
+            file.copy(
+                tables_out / "%s_%s.csv" % (file.basename().stripext(), simulname)
+            )
+            return
+        logger.debug("try to store file %s in dataframe" % (file))
+        df = pd.read_csv(file, sep=",", encoding="us-ascii")
+        logger.debug("file %s stored" % (file))
+        return df
+    except Exception:
+        pass
 
 
 def _assert_eplus_path(eplus_path, bin_path, idd_file):
@@ -212,7 +216,7 @@ def run(
     custom_processes : None or dict(Callback)
         if provided, it has to be a dictionnary with the keys beeing a glob
         (see pathlib.Path.glob), and the value a Callback taking as signature
-        `callback(file: str) -> Any`
+        `callback(file: str, working_dir, simulname) -> Any`
         All the file matching this glob will be processed by this callback.
         Note: they still be processed by pandas.read_csv (if they are csv files),
         resulting in duplicate. The only way to bypass this behavior is to add the
@@ -261,14 +265,19 @@ def run(
         logger.debug(
             "files generated at the end of the simulation: %s" % " ".join(tmp.files())
         )
-        processes = dict("*.csv") = _process_csv
+        processes = {"*.csv": _process_csv}
         if custom_processes is not None:
             processes.update(custom_processes)
 
         results = []
 
         for glob, process in processes.items():
-            results.extend(map(tmp.files(glob), partial(process, working_dir=working_dir, simulname=simulname)))
+            results.extend(
+                map(
+                    partial(process, working_dir=working_dir, simulname=simulname),
+                    tmp.files(glob),
+                )
+            )
 
         if isinstance(keep_data, str):
             to_keep = tmp.files(keep_data)
