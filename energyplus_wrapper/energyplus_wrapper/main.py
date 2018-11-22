@@ -273,10 +273,13 @@ def run(
 
         for glob, process in processes.items():
             results.extend(
-                map(
-                    partial(process, working_dir=working_dir, simulname=simulname),
-                    tmp.files(glob),
-                )
+                [
+                    (
+                        file.basename,
+                        process(file, working_dir=working_dir, simulname=simulname),
+                    )
+                    for file in tmp.files(glob)
+                ]
             )
 
         if isinstance(keep_data, str):
