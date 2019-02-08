@@ -275,7 +275,7 @@ def run(
             results.extend(
                 [
                     (
-                        file.basename,
+                        file.basename(),
                         process(file, working_dir=working_dir, simulname=simulname),
                     )
                     for file in tmp.files(glob)
@@ -305,6 +305,7 @@ def run_from_str(
     keep_data_err=True,
     bin_path=None,
     eplus_path=None,
+    custom_processes=None,
 ):
     """
     energyplus runner using local installation.
@@ -385,6 +386,7 @@ def run_from_str(
             keep_data_err,
             bin_path,
             eplus_path,
+            custom_processes,
         )
 
 
@@ -400,6 +402,7 @@ def run_from_eppy(
     keep_data_err=True,
     bin_path=None,
     eplus_path=None,
+    custom_processes=None,
 ):
     """
     energyplus runner using local installation.
@@ -478,4 +481,5 @@ def run_from_eppy(
         keep_data_err,
         bin_path,
         eplus_path,
+        custom_processes,
     )
