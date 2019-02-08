@@ -5,6 +5,7 @@ import logging
 import subprocess
 import tempfile
 import uuid
+from functools import partial
 
 import pandas as pd
 from path import Path, tempdir
@@ -113,28 +114,24 @@ def _exec_command_line(
         logger.info("energy plus simulation ended")
 
 
-def _manage_output_files(files, working_dir, simulname):
-    result_dataframes = []
-    logger.debug("looking for csv output, return the csv files " "in dataframes if any")
-    for file in files:
+def _process_csv(file, working_dir, simulname):
+    try:
+        logger.debug(
+            "looking for csv output, return the csv files " "in dataframes if any"
+        )
         if "table" in file.basename():
             tables_out = working_dir.abspath() / "tables"
             tables_out.makedirs_p()
             file.copy(
                 tables_out / "%s_%s.csv" % (file.basename().stripext(), simulname)
             )
-            continue
+            return
         logger.debug("try to store file %s in dataframe" % (file))
-        result_dataframes.append(pd.read_csv(file, sep=",", encoding="us-ascii"))
+        df = pd.read_csv(file, sep=",", encoding="us-ascii")
         logger.debug("file %s stored" % (file))
-    if len(result_dataframes) == 0:
-        return
-    if len(result_dataframes) == 1:
-        return result_dataframes.pop()
-    return {
-        "%s" % file.basename().stripext(): df
-        for file, df in zip(files, result_dataframes)
-    }
+        return df
+    except Exception:
+        pass
 
 
 def _assert_eplus_path(eplus_path, bin_path, idd_file):
@@ -168,6 +165,7 @@ def run(
     keep_data_err=True,
     bin_path=None,
     eplus_path=None,
+    custom_processes=None,
 ):
     """
     energyplus runner using local installation.
@@ -199,8 +197,11 @@ def run(
         prefix of output files (default: "eplus")
     out_dir : str, optional
         temporary output directory (default: OS default temp folder).
-    keep_data : bool, optional
-        if True, do not remove the temporary folder after the simulation
+    keep_data : bool or str, optional
+        if True, do not remove the temporary folder after the simulation.
+        if a string is provided, it should be in a glob from (see pathlib.Path.glob).
+        In that case, every output file matching this glob are copied back to the
+        working dir, in separate directory for each simulations.
         (default: False)
     keep_data_err : bool, optional
         if True, copy the temporary folder on out_dir / "failed" if the
@@ -212,7 +213,14 @@ def run(
         consider that EnergyPlus is on the path
     eplus_path : None, optional
         if provided, path to the EnergyPlus.
-
+    custom_processes : None or dict(Callback)
+        if provided, it has to be a dictionnary with the keys beeing a glob
+        (see pathlib.Path.glob), and the value a Callback taking as signature
+        `callback(file: str, working_dir, simulname) -> Any`
+        All the file matching this glob will be processed by this callback.
+        Note: they still be processed by pandas.read_csv (if they are csv files),
+        resulting in duplicate. The only way to bypass this behavior is to add the
+        key "*.csv" to that dictionnary.
 
     Returns
     -------
@@ -257,14 +265,32 @@ def run(
         logger.debug(
             "files generated at the end of the simulation: %s" % " ".join(tmp.files())
         )
+        processes = {"*.csv": _process_csv}
+        if custom_processes is not None:
+            processes.update(custom_processes)
 
-        result_dataframes = _manage_output_files(
-            tmp.files("*.csv"), working_dir, simulname
-        )
+        results = []
+
+        for glob, process in processes.items():
+            results.extend(
+                [
+                    (
+                        file.basename(),
+                        process(file, working_dir=working_dir, simulname=simulname),
+                    )
+                    for file in tmp.files(glob)
+                ]
+            )
+
+        if isinstance(keep_data, str):
+            to_keep = tmp.files(keep_data)
+            to_rm = [file for file in tmp.files() if file not in to_keep]
+            [file.remove() for file in to_rm]
 
         if keep_data:
             tmp.copytree(working_dir.abspath() / "output_data" / simulname)
-        return result_dataframes
+
+        return results
 
 
 def run_from_str(
@@ -279,6 +305,7 @@ def run_from_str(
     keep_data_err=True,
     bin_path=None,
     eplus_path=None,
+    custom_processes=None,
 ):
     """
     energyplus runner using local installation.
@@ -310,8 +337,11 @@ def run_from_str(
         prefix of output files (default: "eplus")
     out_dir : str, optional
         temporary output directory (default: OS default temp folder).
-    keep_data : bool, optional
-        if True, do not remove the temporary folder after the simulation
+    keep_data : bool or str, optional
+        if True, do not remove the temporary folder after the simulation.
+        if a string is provided, it should be in a glob from (see pathlib.Path.glob).
+        In that case, every output file matching this glob are copied back to the
+        working dir, in separate directory for each simulations.
         (default: False)
     keep_data_err : bool, optional
         if True, copy the temporary folder on out_dir / "failed" if the
@@ -323,6 +353,14 @@ def run_from_str(
         consider that EnergyPlus is on the path
     eplus_path : None, optional
         if provided, path to the EnergyPlus.
+    custom_processes : None or dict(Callback)
+        if provided, it has to be a dictionnary with the keys beeing a glob
+        (see pathlib.Path.glob), and the value a Callback taking as signature
+        `callback(file: str) -> Any`
+        All the file matching this glob will be processed by this callback.
+        Note: they still be processed by pandas.read_csv (if they are csv files),
+        resulting in duplicate. The only way to bypass this behavior is to add the
+        key "*.csv" to that dictionnary.
 
 
     Returns
@@ -348,6 +386,8 @@ def run_from_str(
             keep_data_err,
             bin_path,
             eplus_path,
+            custom_processes,
+            
         )
 
 
@@ -363,6 +403,7 @@ def run_from_eppy(
     keep_data_err=True,
     bin_path=None,
     eplus_path=None,
+    custom_processes=None,
 ):
     """
     energyplus runner using local installation.
@@ -394,8 +435,11 @@ def run_from_eppy(
         prefix of output files (default: "eplus")
     out_dir : str, optional
         temporary output directory (default: OS default temp folder).
-    keep_data : bool, optional
-        if True, do not remove the temporary folder after the simulation
+    keep_data : bool or str, optional
+        if True, do not remove the temporary folder after the simulation.
+        if a string is provided, it should be in a glob from (see pathlib.Path.glob).
+        In that case, every output file matching this glob are copied back to the
+        working dir, in separate directory for each simulations.
         (default: False)
     keep_data_err : bool, optional
         if True, copy the temporary folder on out_dir / "failed" if the
@@ -407,6 +451,14 @@ def run_from_eppy(
         consider that EnergyPlus is on the path
     eplus_path : None, optional
         if provided, path to the EnergyPlus.
+    custom_processes : None or dict(Callback)
+        if provided, it has to be a dictionnary with the keys beeing a glob
+        (see pathlib.Path.glob), and the value a Callback taking as signature
+        `callback(file: str) -> Any`
+        All the file matching this glob will be processed by this callback.
+        Note: they still be processed by pandas.read_csv (if they are csv files),
+        resulting in duplicate. The only way to bypass this behavior is to add the
+        key "*.csv" to that dictionnary.
 
 
     Returns
@@ -430,4 +482,5 @@ def run_from_eppy(
         keep_data_err,
         bin_path,
         eplus_path,
+        custom_processes,
     )
