@@ -94,3 +94,6 @@ ENV/
 
 # pytest
 .pytest*
+
+# coverage
+cov.xml

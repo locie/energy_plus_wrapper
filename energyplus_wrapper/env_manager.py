@@ -5,13 +5,16 @@
 import platform
 import re
 
+from appdirs import user_data_dir
 import fasteners
 import pexpect
 import requests
 from path import Path, tempdir
 
-eplus_filename_pattern = (r".*?(?P<filename>EnergyPlus-(?P<version>\d+.\d+.\d+)-"
-                          r"(?P<revision>\w+)-(?P<platform>.*?).sh)$")
+eplus_filename_pattern = (
+    r".*?(?P<filename>EnergyPlus-(?P<version>\d+.\d+.\d+)-"
+    r"(?P<revision>\w+)-(?P<platform>.*?).sh)$"
+)
 
 
 def _is_downloadable(url: str):
@@ -53,7 +56,9 @@ def _extract_and_install(setup_script, eplus_folder):
 
 
 def ensure_eplus_root(
-    url: str, eplus_folder: Path, installer_cache: Path = None
+    url: str,
+    eplus_folder: Path = user_data_dir(appname="energy_plus_wrapper"),
+    installer_cache: Path = None,
 ) -> str:
     """Check if the energy plus root is available in the provided eplus_folder,
     download it from the url, extract and install it if it's not the case. In any cases,
@@ -64,10 +69,12 @@ def ensure_eplus_root(
     Arguments:
         url {str} -- the EnergyPlus installer URL. Look at
             `https://energyplus.net/downloads`
-        eplus_folder {Path} -- where EnergyPlus should be installed, as
-            `{eplus_folder}/{eplus_version}/`
+
 
     Keyword Arguments:
+        eplus_folder {Path} -- where EnergyPlus should be installed, as
+            `{eplus_folder}/{eplus_version}/`.
+            (default: user_data_dir(appname="energy_plus_wrapper"))
         installer_cache {Path} -- where to download the installation script. If None,
             a temporary folder will be created. (default: {None})
 

@@ -2,14 +2,12 @@
 # -*- coding: utf-8 -*-
 
 """
-You should download EPlus version 8.4, 8.5, 8.7 and put it into the tests/ folder
-in order to run these tests, so the tree looks like
+The test will only run under linux, as it rely on `ensure_eplus_root`
+
+A cross-platform version of this function will be welcome (and is planned).
 
 tests
 ├── Energy+.idd
-├── EnergyPlus-8-4-0
-├── EnergyPlus-8-5-0
-├── EnergyPlus-8-7-0
 ├── in_8-4-0.idf
 ├── in_8-5-0.idf
 ├── in_8-7-0.idf
@@ -22,48 +20,41 @@ import multiprocessing as mp
 
 import pytest
 
-from energyplus_wrapper import run
+from energyplus_wrapper import EPlusRunner, run, ensure_eplus_root
+import joblib
+
+base_download = "https://github.com/NREL/EnergyPlus/releases/download"
+
+eplus_url = {
+    "8-4-0": (
+        f"{base_download}/v8.4.0-Update1/" "EnergyPlus-8.4.0-09f5359d8a-Linux-x86_64.sh"
+    ),
+    "8-5-0": f"{base_download}/v8.5.0/EnergyPlus-8.5.0-c87e61b44b-Linux-x86_64.sh",
+    "8-7-0": f"{base_download}/v8.7.0/EnergyPlus-8.7.0-78a111df4a-Linux-x86_64.sh",
+}
 
 
 @pytest.mark.parametrize("version", ["8-4-0", "8-7-0"])
 def test_run(version):
-    return run(
-        "tests/in_%s.idf" % version,
-        "tests/in.epw",
-        idd_file="tests/EnergyPlus-%s/Energy+.idd" % version,
-        bin_path="tests/EnergyPlus-%s/energyplus" % version,
+    root = ensure_eplus_root(eplus_url[version])
+    runner = EPlusRunner(root)
+    return runner.run_one(
+        "tests/in_%s.idf" % version, "tests/in.epw", backup_strategy=None
     )
 
 
 @pytest.mark.parametrize("version", ["8-4-0", "8-7-0"])
-def test_run_eplus_path(version):
-    return run(
-        "tests/in_%s.idf" % version,
-        "tests/in.epw",
-        eplus_path="tests/EnergyPlus-%s" % version,
-    )
-
-
-def run_mp(i, version):
-    return run(
-        "tests/in_%s.idf" % version,
-        "tests/in.epw",
-        idd_file="tests/EnergyPlus-%s/Energy+.idd" % version,
-        bin_path="tests/EnergyPlus-%s/energyplus" % version,
-    )
-
+def test_run_many_serial(version):
+    root = ensure_eplus_root(eplus_url[version])
+    runner = EPlusRunner(root)
+    samples = {key: ("tests/in_%s.idf" % version, "tests/in.epw") for key in range(8)}
+    with joblib.parallel_backend("loky", n_jobs=1):
+        runner.run_many(samples, backup_strategy=None)
 
 @pytest.mark.parametrize("version", ["8-4-0", "8-7-0"])
-def test_run_mp(version):
-    with mp.Pool() as p:
-        res = p.map(ft.partial(run_mp, version=version), range(8))
-    print(res)
-
-
-if __name__ == "__main__":
-    import logging
-
-    logger = logging.getLogger()
-    logger.addHandler(logging.StreamHandler())
-    logger.setLevel("DEBUG")
-    test_run_mp("8-7-0")
+def test_run_many_mp(version):
+    root = ensure_eplus_root(eplus_url[version])
+    runner = EPlusRunner(root)
+    samples = {key: ("tests/in_%s.idf" % version, "tests/in.epw") for key in range(8)}
+    with joblib.parallel_backend("loky", n_jobs=-1):
+        runner.run_many(samples, backup_strategy=None)

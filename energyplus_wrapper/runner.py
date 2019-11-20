@@ -104,7 +104,7 @@ class EPlusRunner:
                 "`version_mismatch_action` argument should be either"
                 " 'raise', 'warn', 'ignore'."
             )
-        idf_version = self.check_idf_version(idf_file)
+        idf_version = self.get_idf_version(idf_file)
         eplus_version = self.eplus_version
         if idf_version != eplus_version:
             msg = (
@@ -126,19 +126,18 @@ class EPlusRunner:
         backup_strategy: str = "on_error",
         backup_dir: Path = "./backup",
         simulation_name: Optional[str] = None,
-        custom_process: Optional[Callable[Simulation, None]] = None,
+        custom_process: Optional[Callable[[Simulation], None]] = None,
         version_mismatch_action: str = "raise",
     ) -> Simulation:
         """Run an EnergyPlus simulation with the provided idf and weather file.
 
-        The IDF can be either a filename, the file content as string, or an eppy IDF
+        The IDF can be either a filename or an eppy IDF
         object.
 
         This function is process safe (as opposite as the one available in `eppy`).
 
         Arguments:
-            idf {Union[Path, eppy_IDF, str]} -- idf file as filename, file content
-                as string or an eppy IDF object.
+            idf {Union[Path, eppy_IDF, str]} -- idf file as filename or eppy IDF object.
             epw_file {Path} -- Weather file emplacement.
 
         Keyword Arguments:
@@ -148,9 +147,9 @@ class EPlusRunner:
                 (default: {"./backup"})
             simulation_name {str, optional} -- The simulation name. A random will be
                 generated if not provided.
-            custom_process {Callable[Simulation], optional} -- overwrite the simulation
-                post - process. Used to customize how the EnergyPlus files are treated
-                after the simulation, but before cleaning the folder.
+            custom_process {Callable[[Simulation], None], optional} -- overwrite the
+                simulation post - process. Used to customize how the EnergyPlus files
+                are treated after the simulation, but before cleaning the folder.
             version_mismatch_action {str} -- should be either ["raise", "warn",
                 "ignore"] (default: {"raise"})
 
@@ -167,40 +166,40 @@ class EPlusRunner:
             )
         backup_dir = Path(backup_dir).abspath()
 
-        with tempdir(dir=self.temp_dir) as td, td:
-            idf_file = idf
-            if not Path(idf_file).exists():
+        with tempdir(dir=self.temp_dir) as td:
+            if isinstance(idf, eppy_IDF):
+                idf = idf.idfstr()
                 idf_file = td / "eppy_idf.idf"
-                if isinstance(idf, eppy_IDF):
-                    # it's a eppy IDF file, we have to translate before writting it
-                    idf = idf.idfstr()
                 with open(idf_file, "w") as idf_descriptor:
                     idf_descriptor.write(idf)
-            idf_file, epw_file = map(Path, (idf_file, epw_file))
-            if version_mismatch_action in ["raise", "warn"]:
-                self.check_version_compat(
-                    idf_file, version_mismatch_action=version_mismatch_action
-                )
+            else:
+                idf_file = idf
+            idf_file, epw_file = (Path(f).abspath() for f in (idf_file, epw_file))
 
-            sim = Simulation(
-                simulation_name,
-                self.eplus_bin,
-                idf_file,
-                epw_file,
-                self.idd_file,
-                working_dir=td,
-            )
-            if custom_process is not None:
-                sim._process_results = custom_process
-            try:
-                sim.run()
-            except (ProcessExecutionError, KeyboardInterrupt):
-                if backup_strategy == "on_error":
-                    sim.backup(backup_dir)
-                raise
-            finally:
-                if backup_strategy == "always":
-                    sim.backup(backup_dir)
+            with td:
+                if version_mismatch_action in ["raise", "warn"]:
+                    self.check_version_compat(
+                        idf_file, version_mismatch_action=version_mismatch_action
+                    )
+
+                sim = Simulation(
+                    simulation_name,
+                    self.eplus_bin,
+                    idf_file,
+                    epw_file,
+                    self.idd_file,
+                    working_dir=td,
+                    post_process=custom_process,
+                )
+                try:
+                    sim.run()
+                except (ProcessExecutionError, KeyboardInterrupt):
+                    if backup_strategy == "on_error":
+                        sim.backup(backup_dir)
+                    raise
+                finally:
+                    if backup_strategy == "always":
+                        sim.backup(backup_dir)
 
         return sim
 
@@ -209,8 +208,7 @@ class EPlusRunner:
         samples: Mapping[str, Tuple[Union[Path, eppy_IDF, str], Path]],
         backup_strategy: str = "on_error",
         backup_dir: Path = "./backup",
-        simulation_name: Optional[str] = None,
-        custom_process: Optional[Callable[Simulation, None]] = None,
+        custom_process: Optional[Callable[[Simulation], None]] = None,
         version_mismatch_action: str = "raise",
     ) -> Dict[str, Simulation]:
         """Run multiple EnergyPlus simulation.
@@ -224,9 +222,7 @@ class EPlusRunner:
                 (either "always", "on_error" or None) (default: {"on_error"})
             backup_dir {Path} -- where to save the files generated by e+
                 (default: {"./backup"})
-            simulation_name {str, optional} -- The simulation name. A random will be
-                generated if not provided.
-            custom_process {Callable[Simulation], optional} -- overwrite the
+            custom_process {Callable[[Simulation], None], optional} -- overwrite the
                 simulation post - process. Used to customize how the EnergyPlus
                 files are treated after the simulation, but before the folder clean.
             version_mismatch_action {str} -- should be either ["raise", "warn",
@@ -242,9 +238,9 @@ class EPlusRunner:
                 epw_file,
                 backup_strategy="on_error",
                 backup_dir="./backup",
-                simulation_name=None,
+                simulation_name=key,
                 custom_process=None,
             )
-            for idf, epw_file in samples.values()
+            for key, (idf, epw_file) in samples.items()
         )
         return {key: sim for key, sim in zip(samples.keys(), sims)}

@@ -23,84 +23,93 @@ for the requirements.
 Usage
 =====
 
-very simple use:
+There is two main classes in the library: the EPlusRunner and the Simulation.
 
-``` {.sourceCode .python}
-from energyplus_wrapper import run
-result = run('in.idf', 'in.epw')
+The first one is linked with the EnergyPlus local installation and allow to run
+one or many simulation. It also ensure the compatibility between the executable
+and the IDF file.
+
+The later is generated with the `runner.run_one` and `runner.run_many`. It
+contains the EnergyPlus simulation reports and results.
+
+A small utility routine `ensure_eplus_root` allow to automatically download,
+extract and install EnergyPlus (but only for linux for now).
+
+```python
+from energyplus_wrapper import EPlusRunner, ensure_eplus_root
+
+eplus_root = ensure_eplus_root("http://url/to/eplus/install.sh")
+# or
+eplus_root = "path/to/energyplus/install/dir"
+
+runner = EPlusRunner(eplus_root)
+simulation = runner.run("my/idf/file.idf", "my/weather/file.epw")
+print(simulation.reports)
+print(simulation.time_series)
 ```
 
-API
-===
+The runner.run is multi-process safe, allowing to run multiple EnergyPlus
+simulation at the same time.
 
-The main function take the idf file as input. Two secondary function
-provide a launch from the model content as string
-[run\_from\_str]{.title-ref}, and as eppy IDF
-[run\_from\_eppy]{.title-ref}. These three function share the same
-signature, excepted the first one.
+The method `runner.run_many` allow to run multiple simulation at the same
+time. It uses `joblib.parallel` under the hood : how the simulation are
+ran and how many CPU are used can be controlled by `joblib.parallel_backend`
 
-``` {.sourceCode .python}
-def run(idf_file, weather_file,
-        working_dir=".",
-        idd_file=None,
-        simulname=None,
-        prefix="eplus",
-        out_dir=tempfile.gettempdir(),
-        keep_data=False,
-        keep_data_err=True,
-        bin_path=None,
-        eplus_path=None):
-    """
-    energyplus runner using local installation.
+```python
+from energyplus_wrapper import EPlusRunner, ensure_eplus_root
 
-    Run an energy-plus simulation with the model file (a .idf file),
-    a weather file (should be a .epw) as required arguments. The output will be
-    a pandas dataframe or a list of dataframe or None, depending of how many
-    csv has been generated during the simulation, and requested in the model
-    file. The run is multiprocessing_safe
+eplus_root = ensure_eplus_root("http://url/to/eplus/install.sh")
+# or
+eplus_root = "path/to/energyplus/install/dir"
 
-    Parameters
-    ----------
-    idf_file : str
-        the file describing the model (.idf)
-    weather_file : str
-        the file describing the weather data (.epw)
-    working_dir : str, optional
-        working directory (default: ".")
-    idd_file : None, optional
-        base energy-plus file (default: None, find Energy+.idd in the
-        e+ install directory if $EPLUS_DIR set, else find it on working
-        dir.)
-    simulname : str or None, optional (default None)
-        this name will be used for temp dir id and saved outputs.
-        If not provided, uuid.uuid1() is used. Be careful to avoid naming
-        collision : the run will alway be done in separated folders, but the
-        output files can overwrite each other if the simulname is the same.
-    prefix : str, optional
-        prefix of output files (default: "eplus")
-    out_dir : str, optional
-        temporary output directory (default: OS default temp folder).
-    keep_data : bool, optional
-        if True, do not remove the temporary folder after the simulation
-        (default: False)
-    keep_data_err : bool, optional
-        if True, copy the temporary folder on out_dir / "failed" if the
-        simulation fail. (default: True)
-    bin_path : None, optional
-        if provided, path to the EnergyPlus binary. If not provided (default),
-        find it on eplus_path / EnergyPlus (if eplus_path set), or
-        use the global variable EPLUS_PATH (id set), or finally
-        consider that EnergyPlus is on the path
-    eplus_path : None, optional
-        if provided, path to the EnergyPlus.
+runner = EPlusRunner(eplus_root)
 
+samples = {"sim01": ("idf01.idf", "weather01.epw"),
+           "sim02": ("idf02.idf", "weather01.epw"),
+           "sim03": ("idf03.idf", "weather02.epw"),
+           "sim04": ("idf04.idf", "weather02.epw")}
 
-    Returns
-    -------
-    pandas.DataFrame or list of pandas.DataFrame or None
-        Only the csv outputs are handled : the output of the
-        function will be None if any csv are generated, a pandas DataFrame
-        if only one csv is generated (which seems to be the usual user
-        case) or a list of DataFrames if many csv are generated.
-    """
+# run on 4 CPU
+with joblib.parallel_backend("loky", n_jobs=4):
+    sims = runner.run_many(samples)
+
+print(sims.keys())
+```
+
+`run_one`, `run_many` common mecanism
+-------------------------------------
+
+*backup*
+
+According to the `backup_strategy`, the runner can save the
+files generated by EnergyPlus in the `backup` folder. It can
+save the files `'always'`, `'on_error'`, or never (with `None`).
+
+*version check*
+
+According to `version_mismatch_action`, a mismatch between the
+e+ executable and the idf file version will `raise` an error,
+`warn` the user or be `ignore`d.
+
+*custom post-process*
+
+You can provide a custom simulation post process. By default,
+the file `eplus-table.htm` is parsed and put in the
+`simulation.reports` attribute, and all the csv files generated
+by the run are parsed and put in `simulation.time_series`.
+
+For example, you could save all the files generated by the simulation with
+
+```python
+from path import Path
+import zipfile
+
+archive_folder = Path("./archive/").abspath()
+
+def save_and_compress(simulation):
+    with zipfile.ZipFile(archive_folder / f"{simulation.name}.gz", "w", zipfile.ZIP_DEFLATED) as zip_handler:
+        for file in simulation.working_dir.files("*"):
+            zip_handler.write(file)
+
+runner.run_one(idf, wf, custom_process=save_and_compress)
 ```

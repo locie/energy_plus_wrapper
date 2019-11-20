@@ -1,12 +1,21 @@
 #!/usr/bin/env python
 # coding=utf-8
 
+from typing import Callable
+
 import attr
 import plumbum
 from path import Path
 from plumbum import ProcessExecutionError
 
 from .utils import process_eplus_html_report, process_eplus_time_series
+
+
+def parse_generated_files_as_df(simulation):
+    simulation.reports = dict(
+        process_eplus_html_report(simulation.working_dir / "eplus-table.htm")
+    )
+    simulation.time_series = dict(process_eplus_time_series(simulation.working_dir))
 
 
 @attr.s
@@ -19,6 +28,9 @@ class Simulation:
         idf_file (Path): idf input file
         epw_file (Path): weather file
         idd_file (Path): idd file (should be in the EnergyPlus root)
+        working_dir (Path): working folder, where the simulation will generate the files
+        post_process (Callable): callable applied after a successful simulation.
+            Take the simulation itself as argument.
         status (str): status of the simulation : either ["pending", "running",
             "interrupted", "failed"]
         reports (dict): if finished, contains the EPlus reports.
@@ -33,16 +45,16 @@ class Simulation:
 
     working_dir = attr.ib(type=str, converter=Path)
 
+    post_process = attr.ib(
+        type=Callable,
+        default=parse_generated_files_as_df,
+        converter=lambda x: x if x is not None else parse_generated_files_as_df,
+    )
+
     status = attr.ib(type=str, default="pending")
     _log = attr.ib(type=str, default="", init=False, repr=False)
     reports = attr.ib(type=dict, default=None, repr=False)
     time_series = attr.ib(type=dict, default=None, repr=False)
-
-    def _process_results(self):
-        self.reports = dict(
-            process_eplus_html_report(self.working_dir / "eplus-table.htm")
-        )
-        self.time_series = dict(process_eplus_time_series(self.working_dir))
 
     @property
     def log(self):
@@ -84,7 +96,7 @@ class Simulation:
         except KeyboardInterrupt:
             self.status = "interrupted"
             raise
-        self._process_results()
+        self.post_process(self)
         return self.reports
 
     def backup(self, backup_dir: Path):
