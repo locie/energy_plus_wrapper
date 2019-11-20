@@ -13,7 +13,7 @@ Install
 
 For now, the package is available on PyPI, and via the github repo.
 
-``` {.sourceCode .shell}
+``` bash
 pip install energyplus-wrapper
 pip install git+git://github.com/locie/energy_plus_wrapper.git
 ```
