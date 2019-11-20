@@ -3,7 +3,7 @@
 This little library has been written in order to run energy+ simulation
 in linux and windows in a thread-safe way.
 
-The main goal is to ensure a stable behaviour across platform and
+The main goal is to ensure a stable behavior across platform and
 version, and to make the link between the e+ building model tools
 written in python and the different analysis and optimization tools.
 
