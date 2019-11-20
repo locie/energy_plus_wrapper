@@ -2,18 +2,19 @@
 # coding=utf-8
 
 
+import platform
 import re
-import sys
 
+import fasteners
 import pexpect
 import requests
 from path import Path, tempdir
-import fasteners
 
-eplus_filename_pattern = r".*?(?P<filename>EnergyPlus-(?P<version>\d+.\d+.\d+)-(?P<revision>\w+)-(?P<platform>.*?).sh)$"
+eplus_filename_pattern = (r".*?(?P<filename>EnergyPlus-(?P<version>\d+.\d+.\d+)-"
+                          r"(?P<revision>\w+)-(?P<platform>.*?).sh)$")
 
 
-def is_downloadable(url):
+def _is_downloadable(url: str):
     content_type = (
         requests.head(url, allow_redirects=True).headers.get("content-type").lower()
     )
@@ -24,24 +25,20 @@ def is_downloadable(url):
     return True
 
 
-def extract_filename_info(url):
+def _extract_filename_info(url: str):
     filename_match = re.match(pattern=eplus_filename_pattern, string=url)
     return filename_match.groupdict()
 
 
-def check_installer_name(installer_name):
-    re.match("EnergyPlus-[]")
-
-
-def download_eplus_version(url, path):
-    if not is_downloadable(url):
+def _download_eplus_version(url, path):
+    if not _is_downloadable(url):
         raise ValueError("URL is not a downloadable file.")
     response = requests.get(url, allow_redirects=True)
     with open(path, "wb") as f:
         f.write(response.content)
 
 
-def extract_and_install(setup_script, eplus_folder):
+def _extract_and_install(setup_script, eplus_folder):
     with pexpect.spawn(f"bash {setup_script}") as child:
         # child.logfile = sys.stderr
         child.expect("\r\n")
@@ -55,17 +52,44 @@ def extract_and_install(setup_script, eplus_folder):
         child.expect(pexpect.EOF)
 
 
-def ensure_eplus_root(url, eplus_folder, installer_cache=None):
+def ensure_eplus_root(
+    url: str, eplus_folder: Path, installer_cache: Path = None
+) -> str:
+    """Check if the energy plus root is available in the provided eplus_folder,
+    download it from the url, extract and install it if it's not the case. In any cases,
+    return the EnergyPlus folder as needed by the EPlusRunner.
+
+    This routine is only available for Linux (for now) !
+
+    Arguments:
+        url {str} -- the EnergyPlus installer URL. Look at
+            `https://energyplus.net/downloads`
+        eplus_folder {Path} -- where EnergyPlus should be installed, as
+            `{eplus_folder}/{eplus_version}/`
+
+    Keyword Arguments:
+        installer_cache {Path} -- where to download the installation script. If None,
+            a temporary folder will be created. (default: {None})
+
+    Returns:
+        [str] -- The EnergyPlus root.
+    """
+
+    if platform.system() != "Linux":
+        raise ValueError(
+            f"Your system ({platform.system()}) is not supported yet."
+            " You have to install EnergyPlus by yourself."
+        )
     eplus_folder = Path(eplus_folder)
     eplus_folder.mkdir_p()
-    with fasteners.InterProcessLock(eplus_folder / '.lock'):
+    with fasteners.InterProcessLock(eplus_folder / ".lock"):
 
         def url_to_installed(url, eplus_folder, script_path):
             if not script_path.exists():
-                download_eplus_version(url, script_path)
-            extract_and_install(script_path, eplus_folder)
+                _download_eplus_version(url, script_path)
+            _extract_and_install(script_path, eplus_folder)
 
-        finfo = extract_filename_info(url)
+        finfo = _extract_filename_info(url)
         filename = finfo["filename"]
         version = finfo["version"]
         expected_eplus_folder = eplus_folder / f"EnergyPlus-{version.replace('.', '-')}"

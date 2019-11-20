@@ -2,59 +2,116 @@
 # coding=utf-8
 
 import re
+from typing import Callable, Dict, Mapping, Optional, Tuple, Union
 from warnings import warn
 
 import attr
 import plumbum
+from coolname import generate_slug
+from eppy.modeleditor import IDF as eppy_IDF
 from joblib import Parallel, delayed
 from path import Path, tempdir, tempfile
 from plumbum import ProcessExecutionError
 
-from coolname import generate_slug
-from eppy.modeleditor import IDF
-
 from .simulation import Simulation
 
+eplus_version_pattern = re.compile(r"EnergyPlus, Version (\d\.\d)")
 idf_version_pattern = re.compile(r"EnergyPlus Version (\d\.\d)")
 idd_version_pattern = re.compile(r"IDD_Version (\d\.\d)")
 
+
 @attr.s
 class EPlusRunner:
+    """Object that contains all that is needed to run an EnergyPlus simulation.
+
+    Attributes:
+        energy_plus_root (Path): EnergyPlus root, where live the executable
+            and the IDD file.
+        temp_dir (Path, optional): where live the temporary files generated
+            by EnergyPlus.
+    """
+
     energy_plus_root = attr.ib(type=str, converter=Path)
     temp_dir = attr.ib(type=str, factory=tempfile.gettempdir)
 
-    def check_idf_version(self, idf_file):
+    def get_idf_version(self, idf_file: Path) -> str:
+        """extract the eplus version affiliated with the idf file.
+
+        Arguments:
+            idf_file {Path} -- idf file emplacement
+
+        Returns:
+            str -- the version as "{major}.{minor}" (e.g. "8.7")
+        """
         with open(idf_file) as f:
             idf_str = f.read()
             version = idf_version_pattern.findall(idf_str)[0]
         return version
 
     @property
-    def eplus_version(self):
+    def idd_version(self) -> str:
+        """Get the eplus version affiliated with the idd file.
+
+        Returns:
+            str -- the version as "{major}.{minor}" (e.g. "8.7")
+        """
         with open(self.idd_file) as f:
             idd_str = f.read()
             version = idd_version_pattern.findall(idd_str)[0]
         return version
 
     @property
-    def eplus_base_exec(self):
-        return plumbum.local[self.energy_plus_root / "energyplus"]
+    def eplus_version(self) -> str:
+        """Get the eplus version for the executable itself.
+
+        Returns:
+            str -- the version as "{major}.{minor}" (e.g. "8.7")
+        """
+        version = eplus_version_pattern.findall(plumbum.local[self.eplus_bin]("-v"))[0]
+        return version
 
     @property
-    def eplus_cmd(self):
-        return self.eplus_base_exec["-s", "d", "-r", "-x", "-i", self.idd_file, "-w"]
+    def idd_file(self) -> Path:
+        """Get the idd file given in the EnergyPlus folder.
 
-    @property
-    def idd_file(self):
+        Returns:
+            Path -- idd file emplacement
+        """
         return self.energy_plus_root / "Energy+.idd"
 
-    def check_version_compat(self, idf_file, version_mismatch_action="raise"):
+    @property
+    def eplus_bin(self) -> Path:
+        """Get the EnergyPlus executable.
+
+        Returns:
+            Path -- Eplus binary emplacement
+        """
+        return self.energy_plus_root / "energyplus"
+
+    def check_version_compat(self, idf_file, version_mismatch_action="raise") -> bool:
+        """Check version compatibility between the IDF and the EnergyPlus
+        binary. Raise an error or warn the user according to
+        `version_mismatch_action`.
+
+        Arguments:
+            idf_file {Path} -- idf file emplacement
+            version_mismatch_action {str} -- either ["raise", "warn", "ignore"]
+        Returns:
+            bool -- True if the versions are the same.
+        """
+        if version_mismatch_action not in ["raise", "warn", "ignore"]:
+            raise ValueError(
+                "`version_mismatch_action` argument should be either"
+                " 'raise', 'warn', 'ignore'."
+            )
         idf_version = self.check_idf_version(idf_file)
         eplus_version = self.eplus_version
         if idf_version != eplus_version:
-            msg = (f"idf version ({idf_version}) and EnergyPlus version ({eplus_version}) does not match."
-                    " According to the EnergyPlus versions, this can prevent the simulation to run"
-                    " or lead to silent error.")
+            msg = (
+                f"idf version ({idf_version}) and EnergyPlus version ({eplus_version}) "
+                " does not match. According to the EnergyPlus versions, this can "
+                " prevent the simulation to run or lead to silent error."
+            )
             if version_mismatch_action == "raise":
                 raise ValueError(msg)
             elif version_mismatch_action == "warn":
@@ -64,20 +121,49 @@ class EPlusRunner:
 
     def run_one(
         self,
-        idf,
-        epw_file,
-        backup_strategy="on_error",
-        backup_dir="./backup",
-        simulation_name=None,
-        custom_process=None,
-        version_mismatch_action="raise",
-    ):
+        idf: Union[Path, eppy_IDF, str],
+        epw_file: Path,
+        backup_strategy: str = "on_error",
+        backup_dir: Path = "./backup",
+        simulation_name: Optional[str] = None,
+        custom_process: Optional[Callable[Simulation, None]] = None,
+        version_mismatch_action: str = "raise",
+    ) -> Simulation:
+        """Run an EnergyPlus simulation with the provided idf and weather file.
+
+        The IDF can be either a filename, the file content as string, or an eppy IDF
+        object.
+
+        This function is process safe (as opposite as the one available in `eppy`).
+
+        Arguments:
+            idf {Union[Path, eppy_IDF, str]} -- idf file as filename, file content
+                as string or an eppy IDF object.
+            epw_file {Path} -- Weather file emplacement.
+
+        Keyword Arguments:
+            backup_strategy {str} -- when to save the files generated by e+
+                (either"always", "on_error" or None) (default: {"on_error"})
+            backup_dir {Path} -- where to save the files generated by e+
+                (default: {"./backup"})
+            simulation_name {str, optional} -- The simulation name. A random will be
+                generated if not provided.
+            custom_process {Callable[Simulation], optional} -- overwrite the simulation
+                post - process. Used to customize how the EnergyPlus files are treated
+                after the simulation, but before cleaning the folder.
+            version_mismatch_action {str} -- should be either ["raise", "warn",
+                "ignore"] (default: {"raise"})
+
+        Returns:
+            Simulation -- the simulation object
+        """
         if simulation_name is None:
             simulation_name = generate_slug()
 
         if backup_strategy not in ["on_error", "always", None]:
             raise ValueError(
-                "`backup_strategy` argument should be either 'on_error', 'always' or None."
+                "`backup_strategy` argument should be either 'on_error', 'always'"
+                " or None."
             )
         backup_dir = Path(backup_dir).abspath()
 
@@ -85,21 +171,29 @@ class EPlusRunner:
             idf_file = idf
             if not Path(idf_file).exists():
                 idf_file = td / "eppy_idf.idf"
-                if isinstance(idf, IDF):
+                if isinstance(idf, eppy_IDF):
                     # it's a eppy IDF file, we have to translate before writting it
                     idf = idf.idfstr()
                 with open(idf_file, "w") as idf_descriptor:
                     idf_descriptor.write(idf)
             idf_file, epw_file = map(Path, (idf_file, epw_file))
-            self.check_version_compat(idf_file, version_mismatch_action=version_mismatch_action)
+            if version_mismatch_action in ["raise", "warn"]:
+                self.check_version_compat(
+                    idf_file, version_mismatch_action=version_mismatch_action
+                )
 
             sim = Simulation(
-                simulation_name, idf_file, epw_file, self.idd_file, working_dir=td
+                simulation_name,
+                self.eplus_bin,
+                idf_file,
+                epw_file,
+                self.idd_file,
+                working_dir=td,
             )
             if custom_process is not None:
                 sim._process_results = custom_process
             try:
-                sim.run(self.eplus_cmd)
+                sim.run()
             except (ProcessExecutionError, KeyboardInterrupt):
                 if backup_strategy == "on_error":
                     sim.backup(backup_dir)
@@ -112,12 +206,36 @@ class EPlusRunner:
 
     def run_many(
         self,
-        samples,
-        backup_strategy="on_error",
-        backup_dir="./backup",
-        simulation_name=None,
-        custom_process=None,
-    ):
+        samples: Mapping[str, Tuple[Union[Path, eppy_IDF, str], Path]],
+        backup_strategy: str = "on_error",
+        backup_dir: Path = "./backup",
+        simulation_name: Optional[str] = None,
+        custom_process: Optional[Callable[Simulation, None]] = None,
+        version_mismatch_action: str = "raise",
+    ) -> Dict[str, Simulation]:
+        """Run multiple EnergyPlus simulation.
+
+        Arguments:
+            samples {mapping key: (idf, weather_file)} -- A dict that contain a
+                `run_one` arguments.
+
+        Keyword Arguments:
+            backup_strategy {str} -- when to save the files generated by e+
+                (either "always", "on_error" or None) (default: {"on_error"})
+            backup_dir {Path} -- where to save the files generated by e+
+                (default: {"./backup"})
+            simulation_name {str, optional} -- The simulation name. A random will be
+                generated if not provided.
+            custom_process {Callable[Simulation], optional} -- overwrite the
+                simulation post - process. Used to customize how the EnergyPlus
+                files are treated after the simulation, but before the folder clean.
+            version_mismatch_action {str} -- should be either ["raise", "warn",
+                "ignore"] (default: {"raise"})
+
+        Returns:
+            Dict[str, Simulation] -- the results put in a dictionnary with the same
+                keys as the samples.
+        """
         sims = Parallel()(
             delayed(self.run_one)(
                 idf,
