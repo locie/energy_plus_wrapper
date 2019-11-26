@@ -12,9 +12,12 @@ from .utils import process_eplus_html_report, process_eplus_time_series
 
 
 def parse_generated_files_as_df(simulation):
-    simulation.reports = dict(
-        process_eplus_html_report(simulation.working_dir / "eplus-table.htm")
-    )
+    try:
+        simulation.reports = dict(
+            process_eplus_html_report(simulation.working_dir / "eplus-table.htm")
+        )
+    except FileNotFoundError:
+        pass
     simulation.time_series = dict(process_eplus_time_series(simulation.working_dir))
 
 
