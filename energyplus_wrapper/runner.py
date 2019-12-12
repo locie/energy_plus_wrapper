@@ -170,7 +170,8 @@ class EPlusRunner:
                 "`backup_strategy` argument should be either 'on_error', 'always'"
                 " or None."
             )
-        backup_dir = Path(backup_dir).abspath()
+        backup_dir = Path(backup_dir)
+        print(backup_dir)
 
         with tempdir(dir=self.temp_dir) as td:
             if isinstance(idf, eppy_IDF):
