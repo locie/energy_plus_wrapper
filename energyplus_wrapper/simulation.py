@@ -69,6 +69,15 @@ class Simulation:
         return self._log
 
     @property
+    def log_file(self):
+        """The log of finished simulation.
+
+        Returns:
+            str -- the log as a string
+        """
+        return self.working_dir / "eplus_run.log"
+
+    @property
     def eplus_base_exec(self):
         """give access to the EnergyPlus executable via plumbum
         """
@@ -79,7 +88,7 @@ class Simulation:
         """return a pre-configured eplus executable that only need the weather
         file and the idf to be ran.
         """
-        return self.eplus_base_exec["-s", "d", "-r", "-x", "-i", self.idd_file, "-w"]
+        return self.eplus_base_exec["-s", "d", "-r", "-x", "-i", self.idd_file, "-w"] > self.log_file
 
     def run(self):
         """Run the EPlus simulation
