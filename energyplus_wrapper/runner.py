@@ -171,7 +171,6 @@ class EPlusRunner:
                 " or None."
             )
         backup_dir = Path(backup_dir)
-        print(backup_dir)
 
         with tempdir(dir=self.temp_dir) as td:
             if isinstance(idf, eppy_IDF):
@@ -188,7 +187,8 @@ class EPlusRunner:
             idf_file, epw_file = (Path(f).abspath() for f in (idf_file, epw_file))
 
             with td:
-
+                idf_file.copy(td)
+                epw_file.copy(td)
                 sim = Simulation(
                     simulation_name,
                     self.eplus_bin,
