@@ -253,6 +253,7 @@ class EPlusRunner:
                 backup_dir=backup_dir,
                 simulation_name=key,
                 custom_process=custom_process,
+                version_mismatch_action=version_mismatch_action
             )
             for key, (idf, epw_file) in samples.items()
         )
