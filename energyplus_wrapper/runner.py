@@ -172,7 +172,7 @@ class EPlusRunner:
             )
         backup_dir = Path(backup_dir)
 
-        with tempdir(dir=self.temp_dir) as td:
+        with tempdir(prefix="energyplus_run_", dir=self.temp_dir) as td:
             if isinstance(idf, eppy_IDF):
                 idf = idf.idfstr()
                 idf_file = td / "eppy_idf.idf"
