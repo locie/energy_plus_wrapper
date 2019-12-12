@@ -45,7 +45,10 @@ class EPlusRunner:
         """
         with open(idf_file) as f:
             idf_str = f.read()
-            version = idf_version_pattern.findall(idf_str)[0]
+            try:
+                version = idf_version_pattern.findall(idf_str)[0]
+            except IndexError:
+                version = False
         return version
 
     @property
@@ -57,7 +60,10 @@ class EPlusRunner:
         """
         with open(self.idd_file) as f:
             idd_str = f.read()
-            version = idd_version_pattern.findall(idd_str)[0]
+            try:
+                version = idd_version_pattern.findall(idd_str)[0]
+            except IndexError:
+                version = False
         return version
 
     @property
@@ -243,8 +249,8 @@ class EPlusRunner:
             delayed(self.run_one)(
                 idf,
                 epw_file,
-                backup_strategy="on_error",
-                backup_dir="./backup",
+                backup_strategy=backup_strategy,
+                backup_dir=backup_dir,
                 simulation_name=key,
                 custom_process=custom_process,
             )
