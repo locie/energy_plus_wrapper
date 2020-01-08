@@ -12,8 +12,7 @@ written in python and the different analysis and optimization tools.
 For now, the package is available on PyPI, and via the github repo.
 
 ``` bash
-pip install energyplus-wrapper
-pip install git+git://github.com/locie/energy_plus_wrapper.git
+pip install git+http://github.com/locie/energy_plus_wrapper@full_rework
 ```
 
 for the requirements.
