@@ -92,7 +92,11 @@ class EPlusRunner:
         Returns:
             Path -- Eplus binary emplacement
         """
-        return self.energy_plus_root / "energyplus"
+        for bin_name in ["energyplus", "EnergyPlus.exe"]:
+            eplus_bin = self.energy_plus_root / "energyplus"
+            if eplus_bin.exists():
+                return eplus_bin
+        raise FileNotFoundError("Unable to find an e+ executable in the provided energy_plus_root.")
 
     def check_version_compat(self, idf_file, version_mismatch_action="raise") -> bool:
         """Check version compatibility between the IDF and the EnergyPlus
