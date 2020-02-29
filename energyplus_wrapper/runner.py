@@ -92,8 +92,8 @@ class EPlusRunner:
         Returns:
             Path -- Eplus binary emplacement
         """
-        for bin_name in ["energyplus", "EnergyPlus.exe"]:
-            eplus_bin = self.energy_plus_root / "energyplus"
+        for bin_name in ["energyplus", "EnergyPlus.exe", "energyplus.exe"]:
+            eplus_bin = self.energy_plus_root / bin_name
             if eplus_bin.exists():
                 return eplus_bin
         raise FileNotFoundError("Unable to find an e+ executable in the provided energy_plus_root.")
