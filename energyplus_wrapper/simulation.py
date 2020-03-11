@@ -13,12 +13,12 @@ from .utils import process_eplus_html_report, process_eplus_time_series
 
 def parse_generated_files_as_df(simulation):
     try:
-        simulation.reports = dict(
-            process_eplus_html_report(simulation.working_dir / "eplus-table.htm")
+        simulation.reports = process_eplus_html_report(
+            simulation.working_dir / "eplus-table.htm"
         )
     except FileNotFoundError:
         pass
-    simulation.time_series = dict(process_eplus_time_series(simulation.working_dir))
+    simulation.time_series = process_eplus_time_series(simulation.working_dir)
 
 
 @attr.s
@@ -88,7 +88,10 @@ class Simulation:
         """return a pre-configured eplus executable that only need the weather
         file and the idf to be ran.
         """
-        return self.eplus_base_exec["-s", "d", "-r", "-x", "-i", self.idd_file, "-w"] > self.log_file
+        return (
+            self.eplus_base_exec["-s", "d", "-r", "-x", "-i", self.idd_file, "-w"]
+            > self.log_file
+        )
 
     def run(self):
         """Run the EPlus simulation
