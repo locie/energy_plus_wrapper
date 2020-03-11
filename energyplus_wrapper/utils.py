@@ -7,8 +7,11 @@ import pandas as pd
 from pandas import DataFrame
 from path import Path
 from box import Box, BoxList
+from slugify import slugify
 
 re_section = re.compile(r"Report:(.*)", re.DOTALL)
+re_for = re.compile(r"For:(.*)", re.DOTALL)
+re_timestamp = re.compile(r"Timestamp:(.*)", re.DOTALL)
 
 
 def _eplus_html_report_gen(
@@ -26,15 +29,15 @@ def _eplus_html_report_gen(
         soup = bs4.BeautifulSoup(f.read(), features="lxml")
     for table in soup.find_all("table"):
         try:
-            section = (
-                table.find_previous(text=re.compile(r"Report:(.*)", re.DOTALL))
-                .find_next_sibling("b")
-                .text.strip()
-            )
+            section = table.find_previous(text=re_section).find_next_sibling("b").text
         except AttributeError:
             section = None
+        try:
+            for_ = table.find_previous(text=re_for).find_next_sibling("b").text
+        except AttributeError:
+            for_ = None
         title = table.find_previous_sibling("b").get_text()
-        yield (section, title), pd.read_html(str(table), index_col=0, header=0)[
+        yield ((section, for_), title), pd.read_html(str(table), index_col=0, header=0)[
             0
         ].dropna(how="all")
 
@@ -49,12 +52,12 @@ def process_eplus_html_report(eplus_html_report: Path):
         Box[str, DataFrame] -- Box of nested section - title : dataframe or custom-report: [dataframes]
             that contains the result of the reports.
     """
-    reports = Box(box_intact_types=[pd.DataFrame], default_box=True)
-    for (section, title), df in _eplus_html_report_gen(eplus_html_report):
-        if section is None and title not in reports.keys():
-            reports[title] = BoxList(box_intact_types=[pd.DataFrame])
-        else:
-            reports[section][title] = df
+    reports = Box(box_intact_types=[pd.DataFrame])
+    for ((section, for_), title), df in _eplus_html_report_gen(eplus_html_report):
+        report_key = slugify(f"{section}_for_{for_}", separator="_", lowercase=False)
+        if report_key not in reports:
+            reports[report_key] = Box(box_intact_types=[pd.DataFrame])
+        reports[report_key][title] = df
     return reports
 
 
