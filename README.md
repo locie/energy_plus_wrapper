@@ -40,7 +40,7 @@ eplus_root = "path/to/energyplus/install/dir"
 
 runner = EPlusRunner(eplus_root)
 simulation = runner.run("my/idf/file.idf", "my/weather/file.epw")
-print(simulation.reports)
+print(simulation.reports) # be aware that the result is a complex nested dict
 print(simulation.time_series)
 ```
 
