@@ -189,9 +189,10 @@ class EPlusRunner:
                         idf_file, version_mismatch_action=version_mismatch_action
                     )
             idf_file, epw_file = (Path(f).abspath() for f in (idf_file, epw_file))
-
             with td:
-                idf_file.copy(td)
+                logger.debug((idf_file, epw_file, td))
+                if idf_file not in td.files():
+                    idf_file.copy(td)
                 epw_file.copy(td)
                 sim = Simulation(
                     simulation_name,
