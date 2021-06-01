@@ -17,10 +17,11 @@ tests
 
 import functools as ft
 import multiprocessing as mp
+import pickle
 
 import pytest
 
-from energyplus_wrapper import EPlusRunner, run, ensure_eplus_root
+from energyplus_wrapper import EPlusRunner, ensure_eplus_root
 import joblib
 
 base_download = "https://github.com/NREL/EnergyPlus/releases/download"
@@ -52,9 +53,15 @@ def test_run_many_serial(version):
         runner.run_many(samples, backup_strategy=None)
 
 @pytest.mark.parametrize("version", ["8-4-0", "8-7-0"])
+def test_serialize(version):
+    root = ensure_eplus_root(eplus_url[version])
+    runner = EPlusRunner(root)
+    pickle.loads(pickle.dumps(runner))
+
+@pytest.mark.parametrize("version", ["8-4-0", "8-7-0"])
 def test_run_many_mp(version):
     root = ensure_eplus_root(eplus_url[version])
     runner = EPlusRunner(root)
     samples = {key: ("tests/in_%s.idf" % version, "tests/in.epw") for key in range(8)}
-    with joblib.parallel_backend("loky", n_jobs=-1):
+    with joblib.parallel_backend("multiprocessing", n_jobs=-1):
         runner.run_many(samples, backup_strategy=None)

@@ -4,13 +4,14 @@
 import re
 from typing import Callable, Dict, Mapping, Optional, Tuple, Union
 from warnings import warn
+from tempfile import gettempdir
 
 import attr
 import plumbum
 from coolname import generate_slug
 from eppy.modeleditor import IDF as eppy_IDF
 from joblib import Parallel, delayed
-from path import Path, tempdir, tempfile
+from path import Path, TempDir
 from plumbum import ProcessExecutionError
 
 from .simulation import Simulation
@@ -32,7 +33,7 @@ class EPlusRunner:
     """
 
     energy_plus_root = attr.ib(type=str, converter=Path)
-    temp_dir = attr.ib(type=str, factory=tempfile.gettempdir)
+    temp_dir = attr.ib(type=str, factory=gettempdir)
 
     def get_idf_version(self, idf_file: Path) -> str:
         """extract the eplus version affiliated with the idf file.
@@ -176,7 +177,7 @@ class EPlusRunner:
             )
         backup_dir = Path(backup_dir)
 
-        with tempdir(prefix="energyplus_run_", dir=self.temp_dir) as td:
+        with TempDir(prefix="energyplus_run_", dir=self.temp_dir) as td:
             if isinstance(idf, eppy_IDF):
                 idf = idf.idfstr()
                 idf_file = td / "eppy_idf.idf"
