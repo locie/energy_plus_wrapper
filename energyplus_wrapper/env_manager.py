@@ -9,7 +9,7 @@ from appdirs import user_data_dir
 import fasteners
 import pexpect
 import requests
-from path import Path, tempdir
+from path import Path, TempDir
 
 eplus_filename_pattern = (
     r".*?(?P<filename>EnergyPlus-(?P<version>\d+.\d+.\d+)-"
@@ -104,7 +104,7 @@ def ensure_eplus_root(
             return expected_eplus_folder.abspath()
         expected_eplus_folder.rmtree_p()
         if installer_cache is None:
-            with tempdir() as d:
+            with TempDir() as d:
                 url_to_installed(url, eplus_folder, d / filename)
         else:
             installer_cache = Path(installer_cache)
