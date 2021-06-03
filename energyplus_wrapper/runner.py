@@ -13,6 +13,7 @@ from eppy.modeleditor import IDF as eppy_IDF
 from joblib import Parallel, delayed
 from path import Path, TempDir
 from plumbum import ProcessExecutionError
+from loguru import logger
 
 from .simulation import Simulation
 
@@ -32,7 +33,7 @@ class EPlusRunner:
             by EnergyPlus.
     """
 
-    energy_plus_root = attr.ib(type=str, converter=Path)
+    energy_plus_root = attr.ib(type=str, converter=lambda file: Path(file).abspath())
     temp_dir = attr.ib(type=str, factory=gettempdir)
 
     def get_idf_version(self, idf_file: Path) -> str:
