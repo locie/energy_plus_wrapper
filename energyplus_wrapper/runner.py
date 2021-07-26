@@ -2,7 +2,7 @@
 # coding=utf-8
 
 import re
-from typing import Callable, Dict, Mapping, Optional, Tuple, Union
+from typing import Callable, Dict, Mapping, Optional, Tuple, Union, Sequence
 from warnings import warn
 from tempfile import gettempdir
 
@@ -98,7 +98,9 @@ class EPlusRunner:
             eplus_bin = self.energy_plus_root / bin_name
             if eplus_bin.exists():
                 return eplus_bin
-        raise FileNotFoundError("Unable to find an e+ executable in the provided energy_plus_root.")
+        raise FileNotFoundError(
+            "Unable to find an e+ executable in the provided energy_plus_root."
+        )
 
     def check_version_compat(self, idf_file, version_mismatch_action="raise") -> bool:
         """Check version compatibility between the IDF and the EnergyPlus
@@ -140,6 +142,7 @@ class EPlusRunner:
         simulation_name: Optional[str] = None,
         custom_process: Optional[Callable[[Simulation], None]] = None,
         version_mismatch_action: str = "raise",
+        extra_files: Optional[Sequence[str]] = None,
     ) -> Simulation:
         """Run an EnergyPlus simulation with the provided idf and weather file.
 
@@ -179,6 +182,9 @@ class EPlusRunner:
         backup_dir = Path(backup_dir)
 
         with TempDir(prefix="energyplus_run_", dir=self.temp_dir) as td:
+            if extra_files is not None:
+                for extra_file in extra_files:
+                    Path(extra_file).copy(td)
             if isinstance(idf, eppy_IDF):
                 idf = idf.idfstr()
                 idf_file = td / "eppy_idf.idf"
@@ -249,8 +255,12 @@ class EPlusRunner:
             Dict[str, Simulation] -- the results put in a dictionnary with the same
                 keys as the samples.
         """
-        if epw_file and any([not isinstance(value, (Path, str, eppy_IDF)) for value in samples.values()]):
-            raise ValueError("If epw_file is not None, samples should be a dict as {sim_name: idf}.")
+        if epw_file and any(
+            [not isinstance(value, (Path, str, eppy_IDF)) for value in samples.values()]
+        ):
+            raise ValueError(
+                "If epw_file is not None, samples should be a dict as {sim_name: idf}."
+            )
         if epw_file:
             samples = {key: (idf, epw_file) for key, idf in samples.items()}
         sims = Parallel()(
@@ -261,7 +271,7 @@ class EPlusRunner:
                 backup_dir=backup_dir,
                 simulation_name=key,
                 custom_process=custom_process,
-                version_mismatch_action=version_mismatch_action
+                version_mismatch_action=version_mismatch_action,
             )
             for key, (idf, epw_file) in samples.items()
         )

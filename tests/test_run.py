@@ -52,11 +52,13 @@ def test_run_many_serial(version):
     with joblib.parallel_backend("loky", n_jobs=1):
         runner.run_many(samples, backup_strategy=None)
 
+
 @pytest.mark.parametrize("version", ["8-4-0", "8-7-0"])
 def test_serialize(version):
     root = ensure_eplus_root(eplus_url[version])
     runner = EPlusRunner(root)
     pickle.loads(pickle.dumps(runner))
+
 
 @pytest.mark.parametrize("version", ["8-4-0", "8-7-0"])
 def test_run_many_mp(version):
